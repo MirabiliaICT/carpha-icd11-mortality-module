@@ -1,0 +1,25 @@
+.icd-mapping-btn, .btn{
+    background-color: #096dd9;
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    color: #FFFFFF;
+}
+
+.btn-container{
+    text-align: center;
+}
+
+.upload-mapping-div{
+    text-align: center;
+    margin: 20px auto;
+}
+
+.div-container{
+    width: 60%;
+    margin: auto;
+}
+
+.border{
+    border-radius : 10px;
+}

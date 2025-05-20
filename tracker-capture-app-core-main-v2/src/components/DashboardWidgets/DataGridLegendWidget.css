@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2016-2018 Morten Olav Hansen <mortenoh@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+div.DataGridLegendContainer {
+  height: auto;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+table.DataGridLegend {
+  display: block;
+  table-layout: auto;
+  /* width: 100%; */
+  overflow-x: auto;
+  border: none;
+  border-spacing: 0;
+}
+
+table.DataGridLegend > thead {
+  display: table-row-group;
+  height: inherit;
+  background-color: #f6f7f8;
+  background-image: -webkit-linear-gradient(#fff, #efefef);
+  background-image: linear-gradient(#fff, #efefef);
+  color: #626466;
+  font-size: 12px;
+}
+
+table.DataGridLegend > thead > tr > th {
+  padding: 10px;
+  text-align: left;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  border-left: 1px solid #eee;
+  white-space: nowrap;
+}
+
+table.DataGridLegend > thead > tr > th:last-child {
+  border-right: 1px solid #eee;
+}
+
+table.DataGridLegend > tbody {
+  display: table-row-group;
+  height: inherit;
+}
+
+table.DataGridLegend > tbody > tr > td {
+  font-size: 13px;
+  text-align: left;
+  padding: 8px;
+  border-left: 1px solid #eee;
+  white-space: nowrap;
+}
+
+table.DataGridLegend > tbody > tr > td:last-child {
+  border-right: 1px solid #eee;
+}
+
+table.DataGridLegend > tbody > tr:last-child > td {
+  border-bottom: 1px solid #eee;
+}
+
+table.DataGridLegend > tfoot {
+  display: table-row-group;
+  height: inherit;
+}

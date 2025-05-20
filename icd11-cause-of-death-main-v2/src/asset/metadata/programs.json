@@ -1,0 +1,157 @@
+{
+  "programs": [
+    {
+      "id": "ogrOUKoSaWA",
+      "name": "Cause of death (registration)",
+      "shortName": "Cause of death (registration)",
+      "publicAccess": "--------",
+      "ignoreOverdueEvents": false,
+      "skipOffline": false,
+      "enrollmentDateLabel": "Reported Date ",
+      "onlyEnrollOnce": true,
+      "version": 73,
+      "maxTeiCountToReturn": 0,
+      "selectIncidentDatesInFuture": false,
+      "incidentDateLabel": "Date of death",
+      "selectEnrollmentDatesInFuture": false,
+      "useFirstStageDuringRegistration": false,
+      "completeEventsExpiryDays": 0,
+      "featureType": "NONE",
+      "minAttributesRequiredToSearch": 1,
+      "displayFrontPageList": true,
+      "programType": "WITH_REGISTRATION",
+      "accessLevel": "OPEN",
+      "displayIncidentDate": true,
+      "expiryDays": 0,
+      "trackedEntityType": { "id": "RQrHOJGKT5H" },
+      "translations": [
+        {
+          "property": "SHORT_NAME",
+          "locale": "fr",
+          "value": "Cause du décès (enregistrement)"
+        },
+        {
+          "property": "NAME",
+          "locale": "fr",
+          "value": "Cause du décès (enregistrement)"
+        }
+      ],
+      "attributeValues": [],
+      "programTrackedEntityAttributes": [
+        {
+          "mandatory": true,
+          "searchable": true,
+          "renderOptionsAsRadio": false,
+          "displayInList": true,
+          "sortOrder": 1,
+          "allowFutureDate": false,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "BfkIayM14MF" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": true,
+          "renderOptionsAsRadio": false,
+          "displayInList": true,
+          "sortOrder": 2,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "j1yPic5cJUo" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": true,
+          "renderOptionsAsRadio": false,
+          "displayInList": true,
+          "sortOrder": 3,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "lDKfAjYyQcN" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": true,
+          "renderOptionsAsRadio": false,
+          "displayInList": true,
+          "sortOrder": 4,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "revZcilpJvK" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": true,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 5,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "z4jIMvqs0ff" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 6,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "UpxiqwM8BTC" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": true,
+          "searchable": true,
+          "renderOptionsAsRadio": false,
+          "displayInList": true,
+          "sortOrder": 7,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "F6qFXT44qay" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 8,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "X5p19VIeYyW" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 9,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "rZSVLUfgHlD" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 10,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "p9hGfsmdve7" },
+          "programTrackedEntityAttributeGroups": []
+        },
+        {
+          "mandatory": false,
+          "searchable": false,
+          "renderOptionsAsRadio": false,
+          "displayInList": false,
+          "sortOrder": 11,
+          "program": { "id": "ogrOUKoSaWA" },
+          "trackedEntityAttribute": { "id": "dG792prxjrb" },
+          "programTrackedEntityAttributeGroups": []
+        }
+      ],
+      "notificationTemplates": [],
+      "organisationUnits": [{ "id": "HnyTUFjDFKD" }]
+    }
+  ]
+}

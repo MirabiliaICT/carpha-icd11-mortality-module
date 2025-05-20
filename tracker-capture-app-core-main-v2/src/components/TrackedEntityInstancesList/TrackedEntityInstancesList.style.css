@@ -1,0 +1,13 @@
+.Tracked-Entity-Instance-List-Body {
+  width: 100%;
+  height: 100%;
+}
+
+.MuiTableRow-root {
+  cursor: pointer !important;
+}
+
+li.MuiButtonBase-root{
+  display: revert !important;
+  padding: 10px !important;
+}

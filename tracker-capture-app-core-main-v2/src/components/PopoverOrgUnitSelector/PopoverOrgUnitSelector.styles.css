@@ -1,0 +1,9 @@
+.popover-ou-selector-container {
+  cursor: pointer;
+}
+.ou-selector-container {
+  padding: 20px;
+  width: 600px;
+  height: 100%;
+  position: relative;
+}

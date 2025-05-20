@@ -1,0 +1,16 @@
+const StudentList = (
+    { data, removeStudent }:
+    { data: StudentsInterface[], removeStudent: PropsFunction }) =>
+
+
+query = {
+        templates: {
+          resource: `categoryOptions.json`,
+          params: {
+            paging: 'false',
+            fields: 'id,name,code,attributeValues[value,attribute[id,name]],categories[code]',
+            filter: `attributeValues.value:eq:https://ghesukien.net`,
+            filter: `identifiable:token:${slug}`,
+          },
+        },
+      };
