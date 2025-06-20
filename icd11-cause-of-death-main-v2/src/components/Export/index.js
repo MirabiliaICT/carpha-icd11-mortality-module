@@ -23,12 +23,20 @@ for (let i = moment().year(); i >= 1970; i--) {
 const countryCodes = require("../../asset/metadata/iso3_code.json");
 
 const Export = ({ route, orgUnits }) => {
+  const [selectedOrgUnits, setSelectedOrgUnits] = useState([]);
   const { t } = useTranslation();
   const { dataApi } = useApi();
-  const getData = async (year) =>
+  const getData = async (year, member) =>
     dataApi.pull(
-      `/api/sqlViews/XpI2kVApPIH/data?paging=false&var=year:${year}`
+      // `/api/sqlViews/XpI2kVApPIH/data?paging=false&var=year:${year}`
+      `/api/sqlViews/XpI2kVApPIH/data?paging=false&var=year:${year}&var=member:${member}`
     );
+    console.log("getDatagetDatagetDatagetDatagetDatagetDatagetData ", getData);
+    console.log("selectedOrgUnitsselectedOrgUnitsselectedOrgUnits ", selectedOrgUnits);
+
+      const handleOrgUnitSelection = (selectedUnits) => {
+    setSelectedOrgUnits(selectedUnits);
+  };
   const [periodType, setPeriodType] = useState("Yearly");
   const [selectedPeriods, selectPeriod] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
@@ -95,7 +103,8 @@ const Export = ({ route, orgUnits }) => {
                 let error = false;
                 for (let i = 0; i < selectedPeriods.length; i++) {
                   const year = selectedPeriods[i];
-                  data[year] = await getData(year);
+                  data[year] = await getData(year, 'Anguilla');
+                  console.log("data[year] ", data[year], " listGrid ", data);
                   if ( data[year].status && data[year].status === "ERROR" ) {
                     error = true;
                   }

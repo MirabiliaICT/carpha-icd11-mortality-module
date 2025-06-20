@@ -4,7 +4,7 @@ const { HeaderBar } = Components;
 
 const HeaderBarContainer = () => {
   const { t } = useTranslation();
-  return <HeaderBar title={t("causeOfDeathApp")} />;
+  return <HeaderBar title={t("CARPHA Mortality Module")} />;
 };
 
 export default HeaderBarContainer;
