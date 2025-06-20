@@ -3,8 +3,8 @@ import { connect } from "react-redux";
 
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
-import { Button, Table , message, Upload, Progress} from "antd";
-import { UploadOutlined } from '@ant-design/icons';
+import { Button, Table , message, Upload, List, Typography, Progress} from "antd";
+import { UploadOutlined , CheckCircleTwoTone } from '@ant-design/icons';
 
 import { generateDhis2Payload, generateDhis2Payloadx, generateBulkDhis2Payload } from "../../utils";
 import { Hooks } from "tracker-capture-app-core";
@@ -35,9 +35,7 @@ const { useApi } = Hooks;
 
 
 
-const ImportData = ({
-    metadata
-}) => {
+const ImportData = ({metadata, icdApi_clientToken }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef(null);
     const [orgUnits, setOrgUnits] = useState([]);
@@ -67,9 +65,9 @@ const ImportData = ({
     });
     const [progress, setProgress] = useState(0);
     const { dataApi, metadataApi } = useApi();
-    const {icdApi_clientToken, keyUiLocale } = metadata;
+    const { keyUiLocale } = metadata;
 
-   
+  
     const handleDorisUploadFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -227,7 +225,7 @@ const ImportData = ({
   var finalUrl = url
   
   console.log("finalUrl: " + finalUrl);
-  
+
   const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -237,7 +235,7 @@ const ImportData = ({
           'API-Version': 'v2',
           'Accept-Language': 'en',
           'Authorization': `Bearer ${icdApi_clientToken}`
-      }
+      } 
   });
   
   if (response.status === 200) {
@@ -449,7 +447,34 @@ const ImportData = ({
         console.log('Selected Organization Unit ID:', event.target.value);
     };
 
+
+  const [fileList, setFileList] = useState([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleBeforeUpload = (file) => {
+    setFileList([file]); // Only allow one file
+    setUploadSuccess(false); 
+    return false; 
+  }
+
+  const handleUploadToDhis = async () => {
+    if (!fileList.length) {
+      message.warning("Please select a file before uploading to DHIS.");
+      return;
+    }
+
+    try {
+      await handleFileUploadToDhis(fileList[0]); // Your existing method
+      setUploadSuccess(true);
+      message.success("File uploaded to DHIS successfully.");
+    } catch (err) {
+      message.error("Error uploading to DHIS.");
+      console.error(err);
+    }
+  };
+
     const handleFileUploadToDhis = (file) => {
+        
         const formMapping = require("../../asset/metadata/mapping.json");
     
         if (!file) return false;
@@ -505,7 +530,7 @@ const ImportData = ({
                                     dataValues.push({ dataElement: mappedHeader.id, value });
                                 }
 
-                                if (mappedHeader.type === "attributes") {
+                                if (mappedHeader.type === "attribute") {
                                     attributeValues.push({ attribute: mappedHeader.id, value });
                                 }
                             }
@@ -514,17 +539,14 @@ const ImportData = ({
                             const trackID  = generateCode();
                             const trackentitytype  = generateCode();
                             const enrollmentID  = generateCode();
-                            const programid = "u95entEeZ0q";
+                            const programid = "ogrOUKoSaWA";
                             const programStageId = "WlWJt4lVSWw";
                            const trackedEntityTypeId =  'RQrHOJGKT5H';
                         //    const trackedEntityTypeId =  'nEenWmSyUEp';
 
                            const dateandTime = new Date().toISOString().split('T')[0];
 
-
-
                             const eventPayload = {
-
 
                                 enrollment:{
                                  //storedBy : thu username 
@@ -543,15 +565,15 @@ const ImportData = ({
                                 incidentDate: new Date().toISOString().split('T')[0],
                                 status: "COMPLETED",
                                 lastUpdatedByUserInfo: {
-                                        uid:"xE7jOejl9FI",
-                                        firstName:"John",
-                                        surname:"Traore",
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
                                         username:"admin"
                                     },
                                 createdByUserInfo:{
-                                        uid:"xE7jOejl9FI",
-                                        firstName:"John",
-                                        surname:"Traore",
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
                                         username:"admin"
                                      },
                                 notes:[  
@@ -601,7 +623,47 @@ const ImportData = ({
 
                                      orgUnit: orgUnitID,
                                      program: programid,
-                                     trackedEntityInstance: trackID
+                                       attributes: attributeValues,
+                                     trackedEntityInstance: trackID,
+
+                               enrollment:{
+                                 //storedBy : thu username 
+                                 createdAtClient: dateandTime,
+                                  program: programid,
+                                  lastUpdated: dateandTime,
+                                  created: dateandTime,
+                                  orgUnit: orgUnitID,
+                                  enrollment: enrollmentID,      // Keep the ID
+                                  trackedEntityInstance: trackID,
+                                trackedEntityType: trackedEntityTypeId,
+                                    //orgUnitName: fetch from api 
+                                lastUpdatedAtClient: dateandTime,
+                                enrollmentDate: new Date().toISOString().split('T')[0],
+                                deleted: false,
+                                incidentDate: new Date().toISOString().split('T')[0],
+                                status: "COMPLETED",
+                                lastUpdatedByUserInfo: {
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
+                                        username:"admin"
+                                    },
+                                createdByUserInfo:{
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
+                                        username:"admin"
+                                     },
+                                notes:[  
+                                     ],
+                                relationships:[                                   
+                                     ] ,
+                                attributes: attributeValues,
+
+                                isDirty: true,
+                                isNew: true
+
+                                }
 
 
                                 },
@@ -690,7 +752,7 @@ const ImportData = ({
                     console.log("Generated Individual Data :", data);
 
 
-                    const programid = "u95entEeZ0q";
+                    const programid = "ogrOUKoSaWA";
                     const programMetadata = await metadataApi.getProgramMetadata(programid);
 
                     try {
@@ -836,19 +898,52 @@ const ImportData = ({
                 </select>
             </div>
 
-            <input type="file" accept=".json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
-                <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button>
-                {fileData && !processingData.isProcessing && (
-                    <Button type="primary" onClick={beginDorisCodProcessing}>Start Import</Button>
-                )}
+<>
+              <Upload
+        beforeUpload={handleBeforeUpload}
+        fileList={fileList}
+        onRemove={() => {
+          setFileList([]);
+          setUploadSuccess(false);
+        }}
+        showUploadList={false}
+      >
+        <Button icon={<UploadOutlined />}>Select CSV File</Button>
+      </Upload>
+
+      {fileList.length > 0 && (
+        <List
+          size="small"
+          bordered
+          dataSource={fileList}
+          renderItem={(file) => (
+            <List.Item>
+              <Typography.Text>{file.name}</Typography.Text>
+              {uploadSuccess && (
+                <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 8 }} />
+              )}
+            </List.Item>
+          )}
+        />
+      )}
+
+      <Button
+        type="primary"
+        style={{ marginTop: 10 }}
+        onClick={handleUploadToDhis}
+        disabled={fileList.length === 0}
+      >
+        Upload to DHIS
+      </Button>
+    </>
 
 
-                        {/* Upload button for DHIS2 Import Section */}
 
-
+                {/* {selectedOrgUnit && (
                 <Upload {...uploadProps}>
                     <Button icon={<UploadOutlined />}>Upload CSV</Button>
                 </Upload>
+                )} */}
 
 
 
@@ -893,7 +988,11 @@ const ImportData = ({
 const mapStateToProps = (state) => {
     return {
       metadata: state.metadata,
-      data: state.data
+      data: state.data,
+    icdApi_clientToken: state.metadata.icdApi_clientToken,
+        keyUILocale: state.metadata.keyUiLocale,
+
+
     };
   };
 

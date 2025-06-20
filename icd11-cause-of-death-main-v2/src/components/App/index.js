@@ -171,8 +171,12 @@ const App = ({
             "/api/programs.json",
             { paging: false },
             [
-              "fields=:owner,!created,!lastUpdated,!user,!lastUpdatedBy,!organisationUnits,programTrackedEntityAttributes[:owner,!created,!lastUpdated]",
-              "filter=programType:eq:WITH_REGISTRATION"
+              // "fields=:owner,!created,!lastUpdated,!user,!lastUpdatedBy,!organisationUnits,programTrackedEntityAttributes[:owner,!created,!lastUpdated]",
+              // "filter=programType:eq:WITH_REGISTRATION"
+
+"fields=%3Aowner%2C!created%2C!lastUpdated%2C!user%2C!lastUpdatedBy%2C!organisationUnits%2CprogramTrackedEntityAttributes%5B%3Aowner%2C!created%2C!lastUpdated%5D&",
+"filter=programType%3Aeq%3AWITH_REGISTRATION"
+
             ]
           )
         ]).then(set => {
@@ -285,6 +289,7 @@ const App = ({
 
               await getICD11Options(require("../../asset/metadata/icd11_options.json"));
               metadataApi.get("/api/options.json", { paging: false }, [
+                // "fields=id,name,code,attributeValues%5Bvalue,attribute%5Bid%5D%5D",
                 "fields=id,name,code,attributeValues[value,attribute[id]]",
                 "filter=optionSet.id:eq:" + res[2].id,
               ])

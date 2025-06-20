@@ -15,18 +15,19 @@ export default class MetadataApiClass extends BaseApiClass {
   }
 
   
-  async getOrgUnitsLevel3() {
-    return pull(
-      this.baseUrl,
-      this.username,
-      this.password,
-      "/api/organisationUnits",
-      {
-        paging: false
-      },
-      ["level=2"]
-    );
-  }
+  // async getOrgUnitsLevel3() {
+  //   return pull(
+  //     this.baseUrl,
+  //     this.username,
+  //     this.password,
+  //     "/api/organisationUnits",
+  //     {
+  //       paging: false
+  //     },
+  //     ["level=2"]
+  //   );
+  // }
+  
 
   getPrograms() {
     return pull(
@@ -183,7 +184,20 @@ export default class MetadataApiClass extends BaseApiClass {
       {
         paging: false
       },
-      ["withinUserHierarchy=true", "fields=id,path"]
+      ["withinUserHierarchy=true", "fields=id,path" ,"level=2"]
+    );
+  }
+
+    async getOrgUnitsLevel3() {
+    return pull(
+      this.baseUrl,
+      this.username,
+      this.password,
+      "/api/organisationUnits",
+      {
+        paging: false
+      },
+      ["withinUserHierarchy=true","level=2"]
     );
   }
 
