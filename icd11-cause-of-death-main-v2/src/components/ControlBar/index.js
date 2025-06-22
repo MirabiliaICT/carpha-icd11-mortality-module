@@ -203,7 +203,7 @@ const ControlBar = ({
                 changeRoute(value.target.value);
               }
             }}
-          >
+          >   
             {programMetadata !== null &&
               (userRoles.data || userRoles.admin) && (
                 <MenuItem value="list">{t("dataEntry")}</MenuItem>
@@ -219,9 +219,9 @@ const ControlBar = ({
             {userRoles.admin && (
               <MenuItem value="administration">{t("administration")}</MenuItem>
             )}
-            {userRoles.admin && (
+            {/* {userRoles.admin && (
               <MenuItem value="translation">{t("translation")}</MenuItem>
-            )}
+            )} */}
 
                         
 { userRoles.admin && (
