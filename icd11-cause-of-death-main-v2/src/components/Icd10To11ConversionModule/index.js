@@ -80,6 +80,8 @@ function ICDCodeMapper() {
     reader.readAsText(file);
   };
 
+
+
   // Parse the import file (CSV)
   const handleImportFileUpload = (event) => {
     const file = event.target.files[0];
@@ -341,7 +343,7 @@ function ICDCodeMapper() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-center pt-4">
+      <h1 className="header-style">
         ICD-10 to ICD-11 Code Mapper
       </h1>
 
@@ -351,45 +353,94 @@ function ICDCodeMapper() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 div-container">
-        <div className="border p-4 rounded-md upload-mapping-div">
-          <h4 className="text-lg font-semibold mb-2">
-            Step 1: Upload Mapping File (TXT)
-          </h4>
-          <input
-            type="file"
-            accept=".txt"
-            onChange={handleMappingFileUpload}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
+    {/* STEP 1 */}
+    <div className="div-container">
+      <div className="column-container">
+        <div className="border p-4 rounded-md flex-container">
+        <div className="steps-div">
+            <p className ="steps-style">Step 1</p>
+        </div>
+        <div className="upload-div">
+         <h4 className="upload-styles"> Upload Mapping File (TXT)</h4>
+
+         <div className="file-container">
+               {/* Drag and Drop Zone */}
+               <div
+                 onDrop={handleMappingFileUpload}
+                 onDragOver={handleMappingFileUpload}
+                 className="drag-and-drop-files"
+               >
+                 <img src = "/upload.jpg" alt="upload icon"/>
+                 <h4 className = "drag-name">Drag and drop files here</h4>
+               </div>
+
+               <p className="or">or</p>
+
+        <label className="choose-files">
+           Choose file
+           <input
+             type="file"
+             accept=".txt"
+             onChange={handleMappingFileUpload}
+             hidden
+           />
+         </label>
+          </div>
           {mappingFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              File: {mappingFile.name} ({mappingData.length} mappings loaded)
-            </p>
-          )}
+                      <p className="mt-2 text-sm text-gray-600">
+                        File: {mappingFile.name} ({mappingData.length} mappings loaded)
+                      </p>
+                    )}
+          </div>
         </div>
 
-        <div className="border p-4 rounded-md upload-mapping-div">
-          <h4 className="text-lg font-semibold mb-2">
-            Step 2: Upload Import File (CSV)
-          </h4>
+         {/* STEP 2*/}
+        <div className="border p-4 rounded-md flex-container">
+        <div className="steps-div">
+             <p className ="steps-style">Step 2 </p>
+        </div>
+         <div className="upload-div">
+          <h4 className="upload-styles">Upload Import File (CSV) </h4>
+
+            <div className="file-container">
+                         {/* Drag and Drop Zone */}
+                         <div
+                           onDrop={handleMappingFileUpload}
+                           onDragOver={handleMappingFileUpload}
+                           className="drag-and-drop-files"
+                         >
+                           <img src = "/upload.jpg" alt="upload icon"/>
+                           <h4 className = "drag-name">Drag and drop files here</h4>
+                         </div>
+
+                         <p className="or">or</p>
+
+           <label className="choose-files">
+            Choose file
           <input
             type="file"
             accept=".csv"
             onChange={handleImportFileUpload}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            hidden
           />
-          {importFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              File: {importFile.name} ({importData.length} records loaded)
-            </p>
-          )}
+           </label>
         </div>
-        <div className="flex justify-center mb-8 btn-container">
+        {importFile && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      File: {importFile.name} ({importData.length} records loaded)
+                    </p>
+                  )}
+        </div>
+        </div>
+
+      </div>
+
+      {/* BUTTON */}
+        <div className="mapping-btn-container">
           <button
             onClick={processMapping}
             disabled={!mappingData.length || !importData.length || isProcessing}
-            className="icd-mapping-btn btn"
+            className="mapping-btn"
           >
             {isProcessing ? "Processing..." : "Map ICD-10 to ICD-11 Codes"}
           </button>
@@ -398,34 +449,35 @@ function ICDCodeMapper() {
 
       {mappedData.length > 0 && (
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
+          <div className="results-div">
+            <h2 className="results-styling">
               Results: {mappedData.length} Records Mapped
             </h2>
             <button onClick={downloadCSV} className="btn">
+             <img src = "/download.png" alt="download icon"/>
               Download CSV
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Record ID
-                  </th>
-                  {icdColumns.map((column, index) => (
-                    <React.Fragment key={index}>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {column.replace("co_", "")}
+          <div className="overflow-x-auto table-div">
+            <table className="min-w-full divide-y divide-gray-200 ">
+                  <thead className="table-header tracking-wider uppercase">
+                    <tr>
+                      <th className="table-header tracking-wider uppercase">
+                        Record ID
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100">
-                        {column.replace("co_", "")} (ICD-11)
-                      </th>
-                    </React.Fragment>
-                  ))}
-                </tr>
-              </thead>
+                      {icdColumns.map((column, index) => (
+                        <React.Fragment key={index}>
+                          <th className="table-header tracking-wider uppercase">
+                            {column.replace("co_", "")}
+                          </th>
+                          <th className="table-header uppercase tracking-wider">
+                            {column.replace("co_", "")} (ICD-11)
+                          </th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {mappedData.slice(0, 5).map((record, index) => (
                   <tr key={index}>
@@ -452,10 +504,9 @@ function ICDCodeMapper() {
                   <tr>
                     <td
                       colSpan={1 + icdColumns.length * 2}
-                      className="px-6 py-4 text-center text-sm text-gray-500"
+                      className="record-display"
                     >
-                      Showing 5 of {mappedData.length} records. Download CSV for
-                      complete data.
+                      Showing 5 of {mappedData.length} records.
                     </td>
                   </tr>
                 )}
