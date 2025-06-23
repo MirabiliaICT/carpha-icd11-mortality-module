@@ -1,3 +1,5 @@
+/* Base styles (desktop-first approach) */
+
 .header-style{
     font-size: 28px;
     color: #125887;
@@ -14,12 +16,14 @@
     border-radius: 5px;
     color: #FFFFFF;
 }
-
+.overall-container{
+    width: 80%;
+}
 .btn{
     background-color: #8D8D8D;
     color: white;
     font-size: 12px;
-    font-weight: 500px;
+    font-weight: 500;
     width: 130px;
     height: 40px;
     padding: 5px;
@@ -31,7 +35,7 @@
 }
 
 .rounded-md{
-     height:300px !important;
+     height: 300px;
      border: #D8D8D8 0.5px solid;
      border-radius: 10px;
 }
@@ -41,6 +45,7 @@
     justify-content: space-between;
     gap: 5px;
     margin: auto;
+     margin-bottom:10px;
 }
 
 .steps-div{
@@ -88,13 +93,14 @@
 }
 
 .div-container{
-    width: 70%;
+    width: 80%;
     margin: auto;
 }
 
 .column-container{
     column-count: 2;
     column-gap: 28px;
+    row-gap: 10px;
 }
 
 .border{
@@ -112,19 +118,21 @@
   margin-bottom: 10px;
 }
 
- .btn img{
+.btn img{
     margin-bottom: 5px;
     margin-top: 5px;
     width: 20px;
     margin-right: 10px;
 }
+
 .btn:hover{
     background-color: white;
     color:#8D8D8D;
     border: #8D8D8D 1px solid;
 }
+
 .btn:hover img {
-    filter: brightness(0) invert(1);
+    filter: grayscale(100%) brightness(100%);
 }
 
 .drag-and-drop-files{
@@ -136,18 +144,6 @@
     background-color: white;
     cursor: pointer;
 
-}
-.choose-files{
-     display: inline-block;
-      background-color: white;
-      color: #6E6E6E;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 10px 60px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      font-weight: 500;
 }
 
 .file-container{
@@ -169,7 +165,9 @@
     display: flex;
     justify-content: space-between;
     margin: 10px auto;
-    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+
 }
 
 .results-styling{
@@ -183,18 +181,206 @@
     font-size: 14px;
     font-weight: 500;
     text-align: center;
+    padding: 10px;
 }
 
 .table-header{
     background-color: #F6F6F6;
+    text-align: center;
     color: #202020;
     font-weight: 500;
-    font-size: 14px;
-    text-align: center;
+    font-size: 12px;
+    padding-right: 10px;
     height: 60px;
 }
 
 .table-div{
    width: 80%;
    border: #DADADA 0.5px solid;
+   margin-left: auto;
+   margin-right: auto;
+   overflow-x: auto;
+
 }
+
+.table-border{
+    border-bottom: 0.5px solid #DADADA;
+    text-align: center;
+    padding: 16px 16px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #202020;
+    height: 60px;
+}
+
+.file-name{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.div-container {
+    width: 70%;
+    margin: auto;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    margin: auto;
+    margin-bottom:10px;
+}
+
+.column-container {
+    column-count: 2;
+    column-gap: 28px;
+}
+
+.file-container {
+    box-shadow: 0px 2px 2px rgba(32, 32, 32, 0.15);
+    padding: 20px 30px;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 8px;
+    margin: auto;
+}
+
+.drag-and-drop-files {
+    width: 100%;
+    max-width: 300px;
+    margin: auto;
+}
+
+.results-div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 10px auto;
+}
+
+.table-div {
+    width: fit-content;
+    overflow-x: auto;
+}
+
+    .choose-files{
+         display: inline-block;
+          background-color: white;
+          color: #6E6E6E;
+          font-size: 14px;
+          font-weight: 500;
+          border-radius: 6px;
+          padding: 10px 60px;
+          border: 1px solid #ccc;
+          cursor: pointer;
+          font-weight: 500;
+    }
+
+/* Responsive styles */
+
+@media (max-width: 1024px) {
+
+.overall-container{
+    width: 80%;
+}
+    .div-container {
+        width: 80%;
+    }
+
+    .choose-files{
+          padding: 10px 60px;
+    }
+
+    .column-container {
+        column-count: 1;
+        gap: 10px;
+    }
+
+    .upload-styles {
+        font-size: 20px;
+    }
+
+    .steps-style {
+        font-size: 16px;
+    }
+
+    .results-styling {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .choose-files, .drag-name {
+          font-size: 10px;
+          text-align: center;
+    }
+
+     .choose-files{
+        padding:5px 50px;
+     }
+
+    .rounded-md {
+        height: fit-content;
+    }
+    .header-style {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .btn, .icd-mapping-btn, .mapping-btn {
+        width: 100%;
+        max-width: 200px;
+        margin: 10px auto;
+        display: block;
+        font-size: 14px;
+    }
+
+    .upload-mapping-div, .btn-container {
+        text-align: center;
+    }
+
+    .results-div {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+}
+
+@media (max-width: 480px) {
+
+   .choose-files, .drag-name {
+          font-size: 10px;
+          text-align: center;
+    }
+  .choose-files{
+        padding:5px 50px;
+   }
+
+
+    .rounded-md{
+        height: fit-content;
+    }
+    .upload-styles {
+        font-size: 18px;
+    }
+
+    .btn img {
+        width: 16px;
+        margin: 0 8px;
+    }
+
+    .or {
+        font-size: 14px;
+    }
+
+    .record-display {
+        font-size: 12px;
+    }
+
+    .table-header, .table-border {
+        font-size: 11px;
+    }
+}
+
