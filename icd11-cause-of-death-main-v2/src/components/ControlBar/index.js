@@ -203,7 +203,7 @@ const ControlBar = ({
                 changeRoute(value.target.value);
               }
             }}
-          >
+          >   
             {programMetadata !== null &&
               (userRoles.data || userRoles.admin) && (
                 <MenuItem value="list">{t("dataEntry")}</MenuItem>
@@ -219,9 +219,9 @@ const ControlBar = ({
             {userRoles.admin && (
               <MenuItem value="administration">{t("administration")}</MenuItem>
             )}
-            {userRoles.admin && (
+            {/* {userRoles.admin && (
               <MenuItem value="translation">{t("translation")}</MenuItem>
-            )}
+            )} */}
 
                         
 { userRoles.admin && (
@@ -290,11 +290,11 @@ const ControlBar = ({
         <Divider />
         <DialogContent>
           <div>
-            <strong>Cause of Death App</strong> <i>(version 2.0.0)</i>
+            <strong>CARPHA Mortality Module</strong> <i>(version 2.0.0)</i>
           </div>
           <div>
             Developed of HISP Vietnam in collaboration with University of Oslo
-            and WHO
+            and WHO(Modified by Mirabilia Limited for CARPHA)
           </div>
           <br />
           <div>DHIS2 version tested:</div>

@@ -323,6 +323,24 @@ function ICDCodeMapper() {
     return csvContent;
   };
 
+  const downloadFile = () => {
+    try {
+      const publicUrl = 'Replace with the actual public URL of the file';
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = publicUrl;
+      link.download = 'filename.txt';
+      link.target = '_blank';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);   
+    } catch (error) {     
+      alert('Download failed. Please try again.');
+    }
+  };
+
   // Download mapped data as CSV
   const downloadCSV = () => {
     if (!mappedData.length) {
@@ -437,6 +455,13 @@ function ICDCodeMapper() {
 
       {/* BUTTON */}
         <div className="mapping-btn-container">
+          <button            
+            onClick={downloadFile}
+            style={{ marginRight: '16px' }}
+            className="mapping-btn"
+          >
+            {"Download Mapping File Template"}
+          </button>
           <button
             onClick={processMapping}
             disabled={!mappingData.length || !importData.length || isProcessing}
