@@ -22,6 +22,8 @@
       "blockEntryForm": false,
       "enableUserAssignment": false,
       "minDaysFromStart": 0,
+      "programid": "ogrOUKoSaWA",
+
       "program": { "id": "ogrOUKoSaWA" },
       "notificationTemplates": [],
       "programStageDataElements": [
@@ -573,7 +575,140 @@
           "allowFutureDate": false,
           "programStage": { "id": "WlWJt4lVSWw" },
           "dataElement": { "id": "YZeiZFyQWKs" }
+        },
+
+
+
+
+
+
+
+
+        {
+    "id": "A3vXj91bTzK",
+    "displayInReports": false,
+    "skipSynchronization": false,
+    "renderOptionsAsRadio": false,
+    "compulsory": false,
+    "allowProvidedElsewhere": false,
+    "allowFutureDate": false,
+    "programStage": { "id": "WlWJt4lVSWw" },
+    "dataElement": { "id": "cQTtzqf81UY" }
+  },
+  {
+    "id": "Yk72PmeuALz",
+    "displayInReports": false,
+    "skipSynchronization": false,
+    "renderOptionsAsRadio": false,
+    "compulsory": false,
+    "allowProvidedElsewhere": false,
+    "allowFutureDate": false,
+    "programStage": { "id": "WlWJt4lVSWw" },
+    "dataElement": { "id": "CdspXgp2mWz" }
+  },
+  {
+    "id": "R9Zxb5UfEcm",
+    "displayInReports": false,
+    "skipSynchronization": false,
+    "renderOptionsAsRadio": false,
+    "compulsory": false,
+    "allowProvidedElsewhere": false,
+    "allowFutureDate": false,
+    "programStage": { "id": "WlWJt4lVSWw" },
+    "dataElement": { "id": "QyTACRjivAo" }
+  },
+  {
+    "id": "kBtQyHfL2N7",
+    "displayInReports": false,
+    "skipSynchronization": false,
+    "renderOptionsAsRadio": false,
+    "compulsory": false,
+    "allowProvidedElsewhere": false,
+    "allowFutureDate": false,
+    "programStage": { "id": "WlWJt4lVSWw" },
+    "dataElement": { "id": "Apnx0pnzMUq" }
+  },
+  {
+    "id": "FvW5nM3zUXr",
+    "displayInReports": false,
+    "skipSynchronization": false,
+    "renderOptionsAsRadio": false,
+    "compulsory": false,
+    "allowProvidedElsewhere": false,
+    "allowFutureDate": false,
+    "programStage": { "id": "WlWJt4lVSWw" },
+    "dataElement": { "id": "ZhbIetKpHtd" }
+  }
+
+
+
+  ,
+
+
+
+
+
+        {
+          "id": "tUi7HfVHGRU",
+          "displayInReports": false,
+          "skipSynchronization": false,
+          "renderOptionsAsRadio": false,
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "allowFutureDate": false,
+          "programStage": { "id": "WlWJt4lVSWw" },
+          "dataElement": { "id": "n7JgehR9Ho7" }
+        },                
+        {
+          "id": "kt8bFeyOP8r",
+          "displayInReports": false,
+          "skipSynchronization": false,
+          "renderOptionsAsRadio": false,
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "allowFutureDate": false,
+          "programStage": { "id": "WlWJt4lVSWw" },
+          "dataElement": { "id": "g7yK4KiWz8p" }
+        },
+        {
+          "id": "pG7JmTyOPBv",
+          "displayInReports": false,
+          "skipSynchronization": false,
+          "renderOptionsAsRadio": false,
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "allowFutureDate": false,
+          "programStage": { "id": "WlWJt4lVSWw" },
+          "dataElement": { "id": "f6gYQFiWz96" }
+        },
+        {
+          "id": "bYoPHTyJ8Tr",
+          "displayInReports": false,
+          "skipSynchronization": false,
+          "renderOptionsAsRadio": false,
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "allowFutureDate": false,
+          "programStage": { "id": "WlWJt4lVSWw" },
+          "dataElement": { "id": "wcoiQFTWz9e" }
+        },        
+        {
+          "id": "hUoJWUyJ9Yr",
+          "displayInReports": false,
+          "skipSynchronization": false,
+          "renderOptionsAsRadio": false,
+          "compulsory": false,
+          "allowProvidedElsewhere": false,
+          "allowFutureDate": false,
+          "programStage": { "id": "WlWJt4lVSWw" },
+          "dataElement": { "id": "G1GfJA9Skkb" }
         }
+
+
+
+
+
+
       ],
       "translations": [
         {

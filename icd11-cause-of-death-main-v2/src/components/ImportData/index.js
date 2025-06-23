@@ -5,8 +5,9 @@ import colorImage from '../../asset/chevron-left.png';
 
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
-import { Button, Table, message, Upload, Progress } from "antd";
-import { UploadOutlined } from '@ant-design/icons';
+import { Button, Table , message, Upload, List, Typography, Progress} from "antd";
+import { UploadOutlined , CheckCircleTwoTone } from '@ant-design/icons';
+
 
 import { generateDhis2Payload, generateDhis2Payloadx, generateBulkDhis2Payload } from "../../utils";
 import { Hooks } from "tracker-capture-app-core";
@@ -14,7 +15,6 @@ import { generateCode } from "../../utils";
 
 import { getToken } from "../../utils/icd11";
 
-// import { UploadOutlined } from '@ant-design/icons';
 import {
     mutateTei,
     mutateAttribute,
@@ -22,24 +22,12 @@ import {
     mutateEvent
 } from "../../redux/actions/data";
 
-
-//Methods that this class would include are but not limited to 
-// 1 a method that updates the count of the rejected / accepted / ignored import from doris
-// 2 On the long run th evision is for this module to produce a csv with pre-determined cause of death and results from doris 
-// - the result would be a csv file which we would now decide as a team to either 
-// a. have a button that directly imports the resulting csv directly into dhis 
-// (we now have to think of how to handle the failed ones)
-// b. ALternativelity decide if we wantto import the converted data into dhis using the import export app 
-
-
 // const [loading,setLoading]=useState(false);
 const { useApi } = Hooks;
 
 
 
-const ImportData = ({
-    metadata
-}) => {
+const ImportData = ({metadata, icdApi_clientToken }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef(null);
     const [orgUnits, setOrgUnits] = useState([]);
@@ -86,7 +74,7 @@ const ImportData = ({
 
     const [progress, setProgress] = useState(0);
     const { dataApi, metadataApi } = useApi();
-    const { icdApi_clientToken, keyUiLocale } = metadata;
+    const { keyUiLocale } = metadata;
 
 
     const handleDorisUploadFileSelection = (event) => {
@@ -242,28 +230,29 @@ const ImportData = ({
 
 
 
-        var finalUrl = url
+  var finalUrl = url
+  
+  console.log("finalUrl: " + finalUrl);
 
-        console.log("finalUrl: " + finalUrl);
+  const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+          'Accept': '*/*',
+          'Accept-Encoding' : 'gzip, deflate, br',
+          // 'Connection' : 'keep-alive',
+          'API-Version': 'v2',
+          'Accept-Language': 'en',
+          'Authorization': `Bearer ${icdApi_clientToken}`
+      } 
+  });
+  
+  if (response.status === 200) {
+              const data = await response.json();
+              return data;
+          } else {
+              throw new Error('Failed to process certificate');
+          }
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': '*/*',
-                'Accept-Encoding': 'gzip, deflate, br',
-                // 'Connection' : 'keep-alive',
-                'API-Version': 'v2',
-                'Accept-Language': 'en',
-                'Authorization': `Bearer ${icdApi_clientToken}`
-            }
-        });
-
-        if (response.status === 200) {
-            const data = await response.json();
-            return data;
-        } else {
-            throw new Error('Failed to process certificate');
-        }
     };
 
     const processCertificateList = async (deathCertificates, access, delayInMillis, headers) => {
@@ -467,7 +456,9 @@ const ImportData = ({
         console.log('Selected Organization Unit ID:', event.target.value);
     };
 
+
     const handleFileUploadToDhis = (file) => {
+        
         const formMapping = require("../../asset/metadata/mapping.json");
 
         if (!file) return false;
@@ -505,6 +496,8 @@ const ImportData = ({
                                 key => key.toLowerCase() === header.toLowerCase()
                             );
                             if (attributeKey) {
+
+                                console.log( attributeKey  + "attributeattribute")
                                 return { type: "attribute", id: dataAttributesMapping[attributeKey] };
                             }
 
@@ -528,8 +521,14 @@ const ImportData = ({
                                     dataValues.push({ dataElement: mappedHeader.id, value });
                                 }
 
-                                if (mappedHeader.type === "attributes") {
+                                if (mappedHeader.type === "attribute") {
+
                                     attributeValues.push({ attribute: mappedHeader.id, value });
+
+                                    console.log("attribute logged " +  mappedHeader.id);
+
+                                   console.log("attribute  value logged " +  value);
+
                                 }
                             }
 
@@ -543,44 +542,41 @@ const ImportData = ({
 
                             const dateandTime = new Date().toISOString().split('T')[0];
 
-
-
                             const eventPayload = {
 
-
-                                enrollment: {
-                                    //storedBy : thu username 
-                                    createdAtClient: dateandTime,
-                                    program: programid,
-                                    lastUpdated: dateandTime,
-                                    created: dateandTime,
-                                    orgUnit: orgUnitID,
-                                    enrollment: enrollmentID,      // Keep the ID
-                                    trackedEntityInstance: trackID,
-                                    trackedEntityType: trackedEntityTypeId,
+                                enrollment:{
+                                 //storedBy : thu username 
+                                 createdAtClient: dateandTime,
+                                  program: programid,
+                                  lastUpdated: dateandTime,
+                                  created: dateandTime,
+                                  orgUnit: orgUnitID,
+                                  enrollment: enrollmentID,      // Keep the ID
+                                  trackedEntityInstance: trackID,
+                                trackedEntityType: trackedEntityTypeId,
                                     //orgUnitName: fetch from api 
-                                    lastUpdatedAtClient: dateandTime,
-                                    enrollmentDate: new Date().toISOString().split('T')[0],
-                                    deleted: false,
-                                    incidentDate: new Date().toISOString().split('T')[0],
-                                    status: "COMPLETED",
-                                    lastUpdatedByUserInfo: {
-                                        uid: "xE7jOejl9FI",
-                                        firstName: "John",
-                                        surname: "Traore",
-                                        username: "admin"
+                                lastUpdatedAtClient: dateandTime,
+                                enrollmentDate: new Date().toISOString().split('T')[0],
+                                deleted: false,
+                                incidentDate: new Date().toISOString().split('T')[0],
+                                status: "COMPLETED",
+                                lastUpdatedByUserInfo: {
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
+                                        username:"admin"
                                     },
-                                    createdByUserInfo: {
-                                        uid: "xE7jOejl9FI",
-                                        firstName: "John",
-                                        surname: "Traore",
-                                        username: "admin"
-                                    },
-                                    notes: [
-                                    ],
-                                    relationships: [
-                                    ],
-                                    attributes: attributeValues,
+                                createdByUserInfo:{
+                                        uid:"M5zQapPyTZI",
+                                        firstName:"admin",
+                                        surname:"admin",
+                                        username:"admin"
+                                     },
+                                notes:[  
+                                     ],
+                                relationships:[                                   
+                                     ] ,
+                                attributes: attributeValues,
 
                                     isDirty: true,
                                     isNew: true
@@ -621,45 +617,12 @@ const ImportData = ({
                                     ],
                                     relationships: [],
 
-                                    orgUnit: orgUnitID,
-                                    program: programid,
-                                    trackedEntityInstance: trackID
-
-
+                                     orgUnit: orgUnitID,
+                                     program: programid,
+                                       attributes: attributeValues,
+                                     trackedEntityInstance: trackID
                                 },
-                                events: {
-                                    event: {
-                                        event: generateCode(),
-                                        isDirty: true,
-                                        isNew: true,
-                                        orgUnit: orgUnitID,
-                                        enrollment: enrollmentID,
-                                        trackedEntityInstance: trackID,
-                                        program: programid,
-                                        programStage: programStageId,
-                                        dataValues: dataValues,
-                                        eventDate: new Date().toISOString().split('T')[0],
-                                        dueDate: new Date().toISOString().split('T')[0]
-
-                                        // dataElements: dataValues.dataElement
-
-
-                                    },
-                                    event: generateCode(),
-                                    isDirty: true,
-                                    isNew: true,
-                                    orgUnit: orgUnitID,
-                                    enrollment: enrollmentID,
-                                    trackedEntityInstance: trackID,
-                                    program: programid,
-                                    programStage: programStageId,
-                                    dataValues: dataValues,
-                                    eventDate: new Date().toISOString().split('T')[0],
-                                    dueDate: new Date().toISOString().split('T')[0]
-                                    // dataValues: dataValues,
-                                    // // dataElements: dataValues.dataElement,
-                                    // programStage: "WlWJt4lVSWw"
-                                },
+                                events: { },
                                 event: {
                                     event: generateCode(),
                                     isDirty: false,
@@ -671,8 +634,8 @@ const ImportData = ({
                                     programStage: programStageId,
                                     dataValues: dataValues,
                                     eventDate: new Date().toISOString().split('T')[0],
-                                    dueDate: new Date().toISOString().split('T')[0]
-
+                                    dueDate: new Date().toISOString().split('T')[0],
+                                    attributes: attributeValues
                                 }
                             };
                             parsedData.push(eventPayload);
@@ -1095,7 +1058,7 @@ const beginDhisCodProcessing = async () => {
                                         <span style={{ color: '#666' }}>Progress</span>
                                         {/* Progress Bar */}
                                         <span style={{
-                                            width: '70%',
+                                            width: '78%',
                                             height: '8px',
                                             backgroundColor: '#f0f0f0',
                                             borderRadius: '4px',
@@ -1110,8 +1073,8 @@ const beginDhisCodProcessing = async () => {
                                         </span>
                                         <span style={{ fontWeight: 'bold' }}>
                                             {dorisProcessingData.totalRows > 0
-                                                ? `${((dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100).toFixed(0)}%/100%`
-                                                : '0%/100%'
+                                                ? `${((dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100).toFixed(0)}%`
+                                                : '0%'
                                             }
                                         </span>
                                     </div>
@@ -1263,8 +1226,8 @@ const beginDhisCodProcessing = async () => {
                                         </span>
                                         <span style={{ fontWeight: 'bold' }}>
                                             {dhisProcessingData.totalRows > 0
-                                                ? `${((dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100).toFixed(0)}%/100%`
-                                                : '0%/100%'
+                                                ? `${((dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100).toFixed(0)}%`
+                                                : '0%'
                                             }
                                         </span>
                                     </div>
@@ -1322,14 +1285,19 @@ const beginDhisCodProcessing = async () => {
 
 
         </div>
+
+
     );
 
 };
 
 const mapStateToProps = (state) => {
     return {
-        metadata: state.metadata,
-        data: state.data
+      metadata: state.metadata,
+      data: state.data,
+    icdApi_clientToken: state.metadata.icdApi_clientToken,
+        keyUILocale: state.metadata.keyUiLocale
+
     };
 };
 

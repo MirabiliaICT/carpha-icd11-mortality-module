@@ -244,7 +244,87 @@
     "underlyingCOD_processed_by": "YZeiZFyQWKs",
     "externalCause_specifiedPlace": "xJaJXE64Mwr",
     "pregnancy_contributed_to_death": "LbWJoDtfDn7",
-    "reason_of_manual_COD_selection": "sJfmq3ueBBI"
+    "reason_of_manual_COD_selection": "sJfmq3ueBBI",
+
+
+
+
+
+    "CauseOfDeathCodeA": "RU1KXNWlT6S",
+    "CauseOfDeathCodeB": "QjFzlJHUD9Y",
+    "CauseOfDeathCodeC": "eRMha7cwC1R",
+    "CauseOfDeathCodeD": "SzLlhusJK6R",
+    "CauseOfDeathCodeE": "F7tgJi4Mrh2",
+    "CauseOfDeathTextA": "okahaacYKqO", 
+    "CauseOfDeathTextB": "MSYrx2z1f8p",
+    "CauseOfDeathTextC": "UboyGYmr19j",
+    "CauseOfDeathTextD": "Pd5bZxTS4ql",
+    "CauseOfDeathTextE": "vVU9TucLNL1",
+    "code": "D1DfTA9Sttb",
+    "stemCode": "RbHkIAJNO7p",
+    "report": "cH9NADGoNwU",
+    "warning": "GGBSjMU7nt6",
+    "CauseOfDeathURIA": "Ovu3nxFVwRB",
+    "CauseOfDeathURIB": "draFmNEP1ID",
+    "CauseOfDeathURIC": "GMiHyYq3JlY",
+    "CauseOfDeathURID": "ddohQFXWz6e",
+    "CauseOfDeathURIE": "lgqnByA6upc",
+    "IntervalA": "QyTACRjivAo",
+    "IntervalB": "Apnx0pnzMUq",
+    "IntervalC": "ZhbIetKpHtd",
+    "IntervalD": "cQTtzqf81UY",
+    "IntervalE": "CdspXgp2mWz",
+    "SurgeryWasPerformed": "dzGpRK1w7sN",
+    "SurgeryDate": "f3DaU224GDr",
+    "SurgeryReason": "YXJsdoaszh3",
+ 
+    "MannerOfDeath": "BaO1pJKhZJc",
+    "DateOfInjury": "O2HZAuxH8RH",
+    "UnderlyingCauseOfDeath":"Iu7raZhcHn9",
+    
+    
+    
+
+
+  "co_underlying_cause":"G1GfJA9Skkb",
+
+   "co_underlying_cause_icd11":"D1DfTA9Sttb",
+   "co_underlying_cause_icd11": "Iu7raZhcHn9",
+   "co_underlying_cause_icd11_text": "RbHkIAJNO7p",
+   
+   
+   "co_associated_cause_a":"n7JgehR9Ho7",
+   "co_associated_cause_a_icd11":"RU1KXNWlT6S",
+   "co_associated_cause_a_icd11_title":"okahaacYKqO",    
+
+   
+   "co_associated_cause_b":"g7yK4KiWz8p",
+   "co_associated_cause_b_icd11":"QjFzlJHUD9Y",
+   "co_associated_cause_b_icd11_title":"MSYrx2z1f8p",
+   
+   
+   "co_associated_cause_c":"f6gYQFiWz96",
+   "co_associated_cause_c_icd11":"eRMha7cwC1R",
+   "co_associated_cause_c_icd11_title":"UboyGYmr19j",
+   
+   
+   "co_associated_cause_d":"wcoiQFTWz9e",
+   "co_associated_cause_d_icd11":"SzLlhusJK6R",
+   "co_associated_cause_d_icd11_title":"Pd5bZxTS4ql",   
+
+   "co_place_death" : "xJaJXE64Mwr",
+   
+    "codA_underlying": "xBZ2VsHFHVG",
+    "codB_underlying": "zm11IWgxKgX",
+    "codC_underlying": "vDoCf56L9wb",
+    "codD_underlying": "ohxcCCUJRmJ"
+
+
+
+
+
+
+
   },
   "programStage": "WlWJt4lVSWw",
   "otherSections": {},

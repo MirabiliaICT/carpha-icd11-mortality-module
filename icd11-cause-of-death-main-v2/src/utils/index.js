@@ -153,9 +153,91 @@ export const convertValueBack = (valueType, value) => {
 //   return payloads;
 // };
 
+
+
+export const generateBulkDhis2Payload = (data, programMetadata) => {
+  console.log("Data:", data, "Program Metadata:", programMetadata);
+
+  // Ensure data is an array
+  if (!Array.isArray(data)) {
+    throw new Error("Expected data to be an array.");
+  }
+
+  // Process each row individually
+  const payloads = data.map((row) => {
+    const newData = JSON.parse(JSON.stringify(row));
+
+    console.log("newDatanewData", newData);
+
+    // Ensure the row has the expected structure
+    if (!newData.currentTei || !newData.currentEnrollment || !newData.currentEvents) {
+      throw new Error("Row data is missing required fields: currentTei, currentEnrollment, or currentEvents.");
+    }
+
+    let { currentTei, currentEnrollment, currentEvents } = newData;
+
+    // Process currentTei
+    currentTei.attributes = Object.keys(currentTei.attributes)
+      .filter((attribute) =>
+        programMetadata.trackedEntityAttributes.find((attr) => attr.id === attribute)
+      )
+      .map((attribute) => {
+        const attributeMetadata = programMetadata.trackedEntityAttributes.find(
+          (attr) => attr.id === attribute
+        );
+        return {
+          attribute,
+          value: convertValueBack(attributeMetadata.valueType, currentTei.attributes[attribute]),
+        };
+      });
+
+    // Process currentEnrollment
+    currentEnrollment.enrollmentDate = moment(currentEnrollment.enrollmentDate).format("YYYY-MM-DD");
+    currentEnrollment.incidentDate = moment(currentEnrollment.incidentDate).format("YYYY-MM-DD");
+
+    // Process currentEvents
+    currentEvents = currentEvents.map((event) => {
+      const programStage = programMetadata.programStages.find(
+        (ps) => ps.id === event.programStage
+      );
+      event.dataValues = Object.keys(event.dataValues).map((dataElement) => {
+        const dataElementMetadata = programStage.dataElements.find(
+          (de) => de.id === dataElement
+        );
+        return {
+          dataElement,
+          value: convertValueBack(dataElementMetadata.valueType, event.dataValues[dataElement]),
+        };
+      });
+      event.eventDate = moment(event.eventDate).format("YYYY-MM-DD");
+      event.dueDate = moment(event.dueDate).format("YYYY-MM-DD");
+
+      console.log("Event:", event);
+      return event;
+    });
+
+    console.log("currentTei:", currentTei);
+    console.log("currentEnrollment:", currentEnrollment);
+    console.log("currentEvents:", currentEvents);
+
+    return { currentTei, currentEnrollment, currentEvents };
+  });
+
+  return payloads;
+};
+
+
 export const generateDhis2Payload = (data, programMetadata) => {
+
+  console.log(data + "-------------------" + programMetadata)
   const newData = JSON.parse(JSON.stringify(data));
+
+  console.log("newDatanewData" + newData);
   let { currentTei, currentEnrollment, currentEvents } = newData;
+
+  console.log("currentTeicurrentTeicurrentTei", currentTei);
+  console.log("currentEnrollmentcurrentEnrollmentcurrentEnrollment", currentEnrollment);
+  console.log("currentEventscurrentEventscurrentEvents", currentEvents);
   currentTei.attributes = Object.keys(currentTei.attributes)
     .filter(attribute => programMetadata.trackedEntityAttributes.find((attr) => attr.id === attribute) )
     .map((attribute) => {
@@ -168,6 +250,11 @@ export const generateDhis2Payload = (data, programMetadata) => {
   currentEnrollment.enrollmentDate = moment(currentEnrollment.enrollmentDate).format("YYYY-MM-DD");
   currentEnrollment.incidentDate = moment(currentEnrollment.incidentDate).format("YYYY-MM-DD");
 
+  console.log("currentEnrollment.enrollmentDate = moment(currentEnrollment.enrollmentDate).format(\"YYYY-MM-DD\")",
+      currentEnrollment.enrollmentDate = moment(currentEnrollment.enrollmentDate).format("YYYY-MM-DD"));
+  console.log("currentEnrollment.incidentDate = moment(currentEnrollment.incidentDate).format(\"YYYY-MM-DD\")",
+      currentEnrollment.incidentDate = moment(currentEnrollment.incidentDate).format("YYYY-MM-DD"));
+
   currentEvents = currentEvents.map((event) => {
     const programStage = programMetadata.programStages.find((ps) => ps.id === event.programStage);
     event.dataValues = Object.keys(event.dataValues).map((dataElement) => {
@@ -179,11 +266,54 @@ export const generateDhis2Payload = (data, programMetadata) => {
     });
     event.eventDate = moment(event.eventDate).format("YYYY-MM-DD");
     event.dueDate = moment(event.dueDate).format("YYYY-MM-DD");
+
+    console.log("Eventttttttt" + event);
+
     return event;
   });
 
+  console.log("currentTei" + currentTei);
+  console.log("currentEnrollment" + currentEnrollment);
+  console.log("currentEvents" + currentEvents);
+
+
+
+
   return { currentTei, currentEnrollment, currentEvents };
 };
+
+
+// export const generateDhis2Payload = (data, programMetadata) => {
+//   const newData = JSON.parse(JSON.stringify(data));
+//   let { currentTei, currentEnrollment, currentEvents } = newData;
+//   currentTei.attributes = Object.keys(currentTei.attributes)
+//     .filter(attribute => programMetadata.trackedEntityAttributes.find((attr) => attr.id === attribute) )
+//     .map((attribute) => {
+//     const attributeMetadata = programMetadata.trackedEntityAttributes.find((attr) => attr.id === attribute);
+//     return {
+//       attribute,
+//       value: convertValueBack(attributeMetadata.valueType, currentTei.attributes[attribute])
+//     };
+//   });
+//   currentEnrollment.enrollmentDate = moment(currentEnrollment.enrollmentDate).format("YYYY-MM-DD");
+//   currentEnrollment.incidentDate = moment(currentEnrollment.incidentDate).format("YYYY-MM-DD");
+
+//   currentEvents = currentEvents.map((event) => {
+//     const programStage = programMetadata.programStages.find((ps) => ps.id === event.programStage);
+//     event.dataValues = Object.keys(event.dataValues).map((dataElement) => {
+//       const dataElementMetadata = programStage.dataElements.find((de) => de.id === dataElement);
+//       return {
+//         dataElement,
+//         value: convertValueBack(dataElementMetadata.valueType, event.dataValues[dataElement])
+//       };
+//     });
+//     event.eventDate = moment(event.eventDate).format("YYYY-MM-DD");
+//     event.dueDate = moment(event.dueDate).format("YYYY-MM-DD");
+//     return event;
+//   });
+
+//   return { currentTei, currentEnrollment, currentEvents };
+// };
 
 
 
