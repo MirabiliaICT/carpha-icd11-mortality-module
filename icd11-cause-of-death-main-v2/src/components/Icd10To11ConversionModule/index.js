@@ -246,65 +246,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
   };
 
   // Map ICD-10 codes to ICD-11 codes
-  // const processMapping = () => {
-  //   if (!mappingData.length || !importData.length) {
-  //     setError('Please upload both mapping and import files first');
-  //     return;
-  //   }
-
-  //   setIsProcessing(true);
-
-  //   try {
-  //     // Create a lookup map for faster access
-  //     const icd10ToIcd11Map = {};
-  //     mappingData.forEach(item => {
-  //       if (item.icd10Code) {
-  //         icd10ToIcd11Map[item.icd10Code] = {
-  //           icd11Code: item.icd11Code,
-  //           icd10Title: item.icd10Title,
-  //           icd11Title: item.icd11Title
-  //         };
-  //       }
-  //     });
-
-  //     // Process each record in the import data
-  //     const result = importData.map(record => {
-  //       const mappedRecord = { ...record };
-
-  //       // Check and map ICD-10 codes in relevant columns
-  //       icdColumns.forEach(column => {
-  //         const icd10Code = record[column];
-
-  //         // Handle null/NULL/NUL values
-  //         if (!icd10Code || icd10Code === 'NULL' || icd10Code === 'NUL') {
-  //           mappedRecord[`${column}_icd11`] = 'NIL';
-  //           mappedRecord[`${column}_icd11_title`] = 'NIL';
-  //         } else {
-  //           const mapping = icd10ToIcd11Map[icd10Code];
-
-  //           if (mapping) {
-  //             mappedRecord[`${column}_icd11`] = mapping.icd11Code;
-  //             mappedRecord[`${column}_icd11_title`] = mapping.icd11Title;
-  //           } else {
-  //             mappedRecord[`${column}_icd11`] = 'Not Found';
-  //             mappedRecord[`${column}_icd11_title`] = 'Not Found';
-  //           }
-  //         }
-  //       });
-
-  //       return mappedRecord;
-  //     });
-
-  //     setMappedData(result);
-  //     setError('');
-  //   } catch (err) {
-  //     setError('Error during mapping process: ' + err.message);
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
-
-  // Map ICD-10 codes to ICD-11 codes
+ 
   const processMapping = () => {
     if (!mappingData.length || !importData.length) {
       setError("Please upload both mapping and import files first");
@@ -357,13 +299,59 @@ const handleMappingFileUpload = (eventOrFiles) => {
 
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
-              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title;
+              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : ''; ;
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
               mappedRecord[`${column}_icd11_title`] = "Not Found";
             }
           }
         });
+
+      //cod*_underlying logic here
+      const underlying = mappedRecord["co_underlying_cause_icd11"] || "";
+
+      mappedRecord["codA_underlying"] = underlying && underlying === mappedRecord["co_associated_cause_a_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codB_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_b_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codC_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_c_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codD_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_d_icd11"]
+          ? "TRUE"
+          : "";
+
+
+          //Very Optional but we need date of birth 
+
+          const deathYearRaw = record["nu_death_year"];
+const ageRaw = record["nu_age"];
+
+const deathYear = parseInt(deathYearRaw, 10);
+const age = parseInt(ageRaw, 10);
+
+if (
+  !isNaN(deathYear) &&
+  !isNaN(age) &&
+  deathYearRaw !== "" &&
+  ageRaw !== "" &&
+  deathYearRaw !== null &&
+  ageRaw !== null
+) {
+  const birthYear = deathYear - age;
+  mappedRecord["dob"] = `${birthYear}-01-01`;
+} else {
+  mappedRecord["dob"] = "";
+}
+
 
         return mappedRecord;
       });
@@ -376,6 +364,22 @@ const handleMappingFileUpload = (eventOrFiles) => {
       setIsProcessing(false);
     }
   };
+
+  const sanitizeCSVValue = (value) => {
+ if (value == null) return "";
+
+  let str = String(value);
+
+  // Remove carriage returns (can keep newlines if needed)
+  str = str.replace(/\r/g, "").replace(/\n/g, " ");
+
+  // Escape quotes by doubling them
+  str = str.replace(/"/g, '""');
+
+  // Wrap in quotes if value contains comma, quote, or newline
+  return /[",]/.test(str) ? `"${str}"` : str;
+};
+
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -398,20 +402,85 @@ const handleMappingFileUpload = (eventOrFiles) => {
       }
     });
 
+     newHeaders.push(
+    "codA_underlying",
+    "codB_underlying",
+    "codC_underlying",
+    "codD_underlying"
+  );
+
+  if (!newHeaders.includes("dob")) {
+  newHeaders.push("dob");
+}
+
+
+    // Defining headers to be rename or duplicate
+  const headerTransforms = {
+    "co_original_identification": "system_id", // copy the value to a new column
+    // Add more if needed: "old_header": "new_header"
+  };
+
+  Object.values(headerTransforms).forEach((newHeader) => {
+    if (!newHeaders.includes(newHeader)) {
+      newHeaders.push(newHeader);
+    }
+  });
+
+
+
+
     // Generate CSV content with the new column order
+    // const csvContent = [
+    //   newHeaders.map((header) => `"${header}"`).join(","),
+    //   ...mappedData.map((row) => {
+    //     return newHeaders
+    //       .map((header) => {
+    //           const originalHeader = Object.entries(headerTransforms).find(
+    //         ([oldKey, newKey]) => newKey === header
+    //       )?.[0];
+
+    //       const value = originalHeader ? row[originalHeader] : row[header];
+    //         // const value = row[header] || "";
+    //         return `"${value}"`;
+    //       })
+    //       .join(",");
+    //   }),
+    // ].join("\n");
+
     const csvContent = [
-      newHeaders.map((header) => `"${header}"`).join(","),
-      ...mappedData.map((row) => {
-        return newHeaders
-          .map((header) => {
-            const value = row[header] || "";
-            return `"${value}"`;
-          })
-          .join(",");
-      }),
-    ].join("\n");
+  newHeaders.map(sanitizeCSVValue).join(","),
+  ...mappedData.map((row) => {
+    return newHeaders.map((header) => {
+      // Handle transformed headers if needed
+      const originalHeader = Object.entries(headerTransforms).find(
+        ([oldKey, newKey]) => newKey === header
+      )?.[0];
+
+      const value = originalHeader ? row[originalHeader] : row[header];
+      return sanitizeCSVValue(value);
+    }).join(",");
+  }),
+].join("\n");
 
     return csvContent;
+  };
+
+  const downloadFile = () => {
+    try {
+      const publicUrl = '\ICD10to11conversionTable.txt';
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = publicUrl;
+      link.download = 'ICD10to11conversionTable.txt';
+      link.target = '_blank';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);   
+    } catch (error) {     
+      alert('Download failed. Please try again.');
+    }
   };
 
   // Download mapped data as CSV
@@ -597,6 +666,13 @@ const handleMappingFileUpload = (eventOrFiles) => {
 
       {/* BUTTON */}
         <div className="mapping-btn-container">
+          <button            
+            onClick={downloadFile}
+            style={{ marginRight: '16px' }}
+            className="mapping-btn"
+          >
+            {"Download Mapping File Template"}
+          </button>
           <button
             onClick={processMapping}
             disabled={!mappingData.length || !importData.length || isProcessing}

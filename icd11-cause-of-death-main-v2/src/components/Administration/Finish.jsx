@@ -331,7 +331,9 @@ const Finish = ({
                 metadataApi.push("/api/dataStore/WHO_ICD11_COD/icdOptionSet", {id: metadata["optionSets"].find( ({code}) => code === "icd11").id}, "PUT"),
                 metadataApi.push("/api/dataStore/WHO_ICD11_COD/formMapping", formMapping, "PUT"),
                 metadataApi.get("/api/options.json", { paging: false }, [
-                    "fields=id,name,code,attributeValues[value,attribute[id]]",
+                                    "fields=id,name,code,attributeValues[value,attribute[id]]",
+
+                    // "fields=id,name,code,attributeValues[value,attribute[id]]",
                     `filter=optionSet.id:eq:${metadata["optionSets"].find( ({code}) => code === "icd11").id}`
                 ]),
                 metadataApi.push(
@@ -382,7 +384,9 @@ const Finish = ({
                             title: "Loading metadata"
                         });
                         Promise.all([
-                            metadataApi.get("/api/trackedEntityAttributes.json", { paging: false }, ["fields=id,displayName,valueType,optionSet,formName"]),
+                            metadataApi.get("/api/trackedEntityAttributes.json", 
+                                { paging: false },
+                                 ["fields=id,displayName,valueType,optionSet,formName"]),
                             metadataApi.getTrackerDataElements(),
                             metadataApi.getProgramMetadata(metadata["programs"][0].id),
                             metadataApi.getMe()

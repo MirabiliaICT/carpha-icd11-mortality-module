@@ -1,6 +1,5 @@
 let apiUrl = process.env.REACT_APP_ICD11_API_URL;
 
-
 const getToken = () => {
   var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
