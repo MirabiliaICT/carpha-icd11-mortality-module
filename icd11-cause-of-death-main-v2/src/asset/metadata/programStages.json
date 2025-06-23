@@ -22,6 +22,8 @@
       "blockEntryForm": false,
       "enableUserAssignment": false,
       "minDaysFromStart": 0,
+      "programid": "ogrOUKoSaWA",
+
       "program": { "id": "ogrOUKoSaWA" },
       "notificationTemplates": [],
       "programStageDataElements": [
