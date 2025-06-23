@@ -1,9 +1,81 @@
-.icd-mapping-btn, .btn{
+.header-style{
+    font-size: 28px;
+    color: #125887;
+    font-weight: 500;
+    justify-self: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.icd-mapping-btn{
     background-color: #096dd9;
     border: none;
     padding: 15px;
     border-radius: 5px;
     color: #FFFFFF;
+}
+
+.btn{
+    background-color: #8D8D8D;
+    color: white;
+    font-size: 12px;
+    font-weight: 500px;
+    width: 130px;
+    height: 40px;
+    padding: 5px;
+}
+.steps-style{
+    color: #6E6E6E;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.rounded-md{
+     height:300px !important;
+     border: #D8D8D8 0.5px solid;
+     border-radius: 10px;
+}
+
+.flex-container{
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    margin: auto;
+}
+
+.steps-div{
+   margin-right:30px;
+   margin-left:15px;
+}
+
+.upload-styles{
+    color: #202020;
+    font-weight: 400;
+    font-size: 24px;
+}
+
+.upload-div{
+    flex:1;
+}
+
+.mapping-btn{
+    background-color: #125887;
+    border-radius: 5px;
+    color: #FFFFFF;
+    padding: 11px 17px;
+    text-align: center;
+}
+
+.mapping-btn:hover{
+    font-family: lato;
+    color: #125887;
+    background-color: #FFFFFF;
+    border: #125887 0.5px solid;
+}
+
+.mapping-btn-container{
+    justify-self: center;
+    margin-top:20px;
 }
 
 .btn-container{
@@ -16,10 +88,113 @@
 }
 
 .div-container{
-    width: 60%;
+    width: 70%;
     margin: auto;
+}
+
+.column-container{
+    column-count: 2;
+    column-gap: 28px;
 }
 
 .border{
     border-radius : 10px;
+}
+
+.drag-name{
+  color: #6E6E6E;
+  font-weight:500;
+  font-size:14px;
+}
+
+.drag-and-drop-zone img{
+  width: 24px;
+  margin-bottom: 10px;
+}
+
+ .btn img{
+    margin-bottom: 5px;
+    margin-top: 5px;
+    width: 20px;
+    margin-right: 10px;
+}
+.btn:hover{
+    background-color: white;
+    color:#8D8D8D;
+    border: #8D8D8D 1px solid;
+}
+.btn:hover img {
+    filter: brightness(0) invert(1);
+}
+
+.drag-and-drop-files{
+    border: 2px dashed #ccc;
+    padding: 8px;
+    width: 300px;
+    text-align: center;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+
+}
+.choose-files{
+     display: inline-block;
+      background-color: white;
+      color: #6E6E6E;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 60px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-weight: 500;
+}
+
+.file-container{
+    justify-items: anchor-center;
+    box-shadow: 0px 2px 2px 0px rgba(32, 32, 32, 0.15);
+    padding: 20px 50px;
+    width: 450px;
+    border-radius: 8px;
+}
+
+.or{
+    color:#202020;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 6px 0px;
+}
+
+.results-div{
+    display: flex;
+    justify-content: space-between;
+    margin: 10px auto;
+    width: 80%;
+}
+
+.results-styling{
+    color: #202020;
+    font-size: 20px;
+    font-weight:500;
+}
+
+.record-display{
+    color: #000000;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.table-header{
+    background-color: #F6F6F6;
+    color: #202020;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    height: 60px;
+}
+
+.table-div{
+   width: 80%;
+   border: #DADADA 0.5px solid;
 }

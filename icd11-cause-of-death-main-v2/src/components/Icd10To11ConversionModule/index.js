@@ -80,6 +80,8 @@ function ICDCodeMapper() {
     reader.readAsText(file);
   };
 
+
+
   // Parse the import file (CSV)
   const handleImportFileUpload = (event) => {
     const file = event.target.files[0];
@@ -153,65 +155,7 @@ function ICDCodeMapper() {
   };
 
   // Map ICD-10 codes to ICD-11 codes
-  // const processMapping = () => {
-  //   if (!mappingData.length || !importData.length) {
-  //     setError('Please upload both mapping and import files first');
-  //     return;
-  //   }
-
-  //   setIsProcessing(true);
-
-  //   try {
-  //     // Create a lookup map for faster access
-  //     const icd10ToIcd11Map = {};
-  //     mappingData.forEach(item => {
-  //       if (item.icd10Code) {
-  //         icd10ToIcd11Map[item.icd10Code] = {
-  //           icd11Code: item.icd11Code,
-  //           icd10Title: item.icd10Title,
-  //           icd11Title: item.icd11Title
-  //         };
-  //       }
-  //     });
-
-  //     // Process each record in the import data
-  //     const result = importData.map(record => {
-  //       const mappedRecord = { ...record };
-
-  //       // Check and map ICD-10 codes in relevant columns
-  //       icdColumns.forEach(column => {
-  //         const icd10Code = record[column];
-
-  //         // Handle null/NULL/NUL values
-  //         if (!icd10Code || icd10Code === 'NULL' || icd10Code === 'NUL') {
-  //           mappedRecord[`${column}_icd11`] = 'NIL';
-  //           mappedRecord[`${column}_icd11_title`] = 'NIL';
-  //         } else {
-  //           const mapping = icd10ToIcd11Map[icd10Code];
-
-  //           if (mapping) {
-  //             mappedRecord[`${column}_icd11`] = mapping.icd11Code;
-  //             mappedRecord[`${column}_icd11_title`] = mapping.icd11Title;
-  //           } else {
-  //             mappedRecord[`${column}_icd11`] = 'Not Found';
-  //             mappedRecord[`${column}_icd11_title`] = 'Not Found';
-  //           }
-  //         }
-  //       });
-
-  //       return mappedRecord;
-  //     });
-
-  //     setMappedData(result);
-  //     setError('');
-  //   } catch (err) {
-  //     setError('Error during mapping process: ' + err.message);
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
-
-  // Map ICD-10 codes to ICD-11 codes
+ 
   const processMapping = () => {
     if (!mappingData.length || !importData.length) {
       setError("Please upload both mapping and import files first");
@@ -264,13 +208,59 @@ function ICDCodeMapper() {
 
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
-              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title;
+              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : ''; ;
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
               mappedRecord[`${column}_icd11_title`] = "Not Found";
             }
           }
         });
+
+      //cod*_underlying logic here
+      const underlying = mappedRecord["co_underlying_cause_icd11"] || "";
+
+      mappedRecord["codA_underlying"] = underlying && underlying === mappedRecord["co_associated_cause_a_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codB_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_b_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codC_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_c_icd11"]
+          ? "TRUE"
+          : "";
+
+      mappedRecord["codD_underlying"] =
+        underlying && underlying === mappedRecord["co_associated_cause_d_icd11"]
+          ? "TRUE"
+          : "";
+
+
+          //Very Optional but we need date of birth 
+
+          const deathYearRaw = record["nu_death_year"];
+const ageRaw = record["nu_age"];
+
+const deathYear = parseInt(deathYearRaw, 10);
+const age = parseInt(ageRaw, 10);
+
+if (
+  !isNaN(deathYear) &&
+  !isNaN(age) &&
+  deathYearRaw !== "" &&
+  ageRaw !== "" &&
+  deathYearRaw !== null &&
+  ageRaw !== null
+) {
+  const birthYear = deathYear - age;
+  mappedRecord["dob"] = `${birthYear}-01-01`;
+} else {
+  mappedRecord["dob"] = "";
+}
+
 
         return mappedRecord;
       });
@@ -283,6 +273,22 @@ function ICDCodeMapper() {
       setIsProcessing(false);
     }
   };
+
+  const sanitizeCSVValue = (value) => {
+ if (value == null) return "";
+
+  let str = String(value);
+
+  // Remove carriage returns (can keep newlines if needed)
+  str = str.replace(/\r/g, "").replace(/\n/g, " ");
+
+  // Escape quotes by doubling them
+  str = str.replace(/"/g, '""');
+
+  // Wrap in quotes if value contains comma, quote, or newline
+  return /[",]/.test(str) ? `"${str}"` : str;
+};
+
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -305,18 +311,65 @@ function ICDCodeMapper() {
       }
     });
 
+     newHeaders.push(
+    "codA_underlying",
+    "codB_underlying",
+    "codC_underlying",
+    "codD_underlying"
+  );
+
+  if (!newHeaders.includes("dob")) {
+  newHeaders.push("dob");
+}
+
+
+    // Defining headers to be rename or duplicate
+  const headerTransforms = {
+    "co_original_identification": "system_id", // copy the value to a new column
+    // Add more if needed: "old_header": "new_header"
+  };
+
+  Object.values(headerTransforms).forEach((newHeader) => {
+    if (!newHeaders.includes(newHeader)) {
+      newHeaders.push(newHeader);
+    }
+  });
+
+
+
+
     // Generate CSV content with the new column order
+    // const csvContent = [
+    //   newHeaders.map((header) => `"${header}"`).join(","),
+    //   ...mappedData.map((row) => {
+    //     return newHeaders
+    //       .map((header) => {
+    //           const originalHeader = Object.entries(headerTransforms).find(
+    //         ([oldKey, newKey]) => newKey === header
+    //       )?.[0];
+
+    //       const value = originalHeader ? row[originalHeader] : row[header];
+    //         // const value = row[header] || "";
+    //         return `"${value}"`;
+    //       })
+    //       .join(",");
+    //   }),
+    // ].join("\n");
+
     const csvContent = [
-      newHeaders.map((header) => `"${header}"`).join(","),
-      ...mappedData.map((row) => {
-        return newHeaders
-          .map((header) => {
-            const value = row[header] || "";
-            return `"${value}"`;
-          })
-          .join(",");
-      }),
-    ].join("\n");
+  newHeaders.map(sanitizeCSVValue).join(","),
+  ...mappedData.map((row) => {
+    return newHeaders.map((header) => {
+      // Handle transformed headers if needed
+      const originalHeader = Object.entries(headerTransforms).find(
+        ([oldKey, newKey]) => newKey === header
+      )?.[0];
+
+      const value = originalHeader ? row[originalHeader] : row[header];
+      return sanitizeCSVValue(value);
+    }).join(",");
+  }),
+].join("\n");
 
     return csvContent;
   };
@@ -341,7 +394,7 @@ function ICDCodeMapper() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-center pt-4">
+      <h1 className="header-style">
         ICD-10 to ICD-11 Code Mapper
       </h1>
 
@@ -351,45 +404,94 @@ function ICDCodeMapper() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 div-container">
-        <div className="border p-4 rounded-md upload-mapping-div">
-          <h4 className="text-lg font-semibold mb-2">
-            Step 1: Upload Mapping File (TXT)
-          </h4>
-          <input
-            type="file"
-            accept=".txt"
-            onChange={handleMappingFileUpload}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
+    {/* STEP 1 */}
+    <div className="div-container">
+      <div className="column-container">
+        <div className="border p-4 rounded-md flex-container">
+        <div className="steps-div">
+            <p className ="steps-style">Step 1</p>
+        </div>
+        <div className="upload-div">
+         <h4 className="upload-styles"> Upload Mapping File (TXT)</h4>
+
+         <div className="file-container">
+               {/* Drag and Drop Zone */}
+               <div
+                 onDrop={handleMappingFileUpload}
+                 onDragOver={handleMappingFileUpload}
+                 className="drag-and-drop-files"
+               >
+                 <img src = "/upload.jpg" alt="upload icon"/>
+                 <h4 className = "drag-name">Drag and drop files here</h4>
+               </div>
+
+               <p className="or">or</p>
+
+        <label className="choose-files">
+           Choose file
+           <input
+             type="file"
+             accept=".txt"
+             onChange={handleMappingFileUpload}
+             hidden
+           />
+         </label>
+          </div>
           {mappingFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              File: {mappingFile.name} ({mappingData.length} mappings loaded)
-            </p>
-          )}
+                      <p className="mt-2 text-sm text-gray-600">
+                        File: {mappingFile.name} ({mappingData.length} mappings loaded)
+                      </p>
+                    )}
+          </div>
         </div>
 
-        <div className="border p-4 rounded-md upload-mapping-div">
-          <h4 className="text-lg font-semibold mb-2">
-            Step 2: Upload Import File (CSV)
-          </h4>
+         {/* STEP 2*/}
+        <div className="border p-4 rounded-md flex-container">
+        <div className="steps-div">
+             <p className ="steps-style">Step 2 </p>
+        </div>
+         <div className="upload-div">
+          <h4 className="upload-styles">Upload Import File (CSV) </h4>
+
+            <div className="file-container">
+                         {/* Drag and Drop Zone */}
+                         <div
+                           onDrop={handleMappingFileUpload}
+                           onDragOver={handleMappingFileUpload}
+                           className="drag-and-drop-files"
+                         >
+                           <img src = "/upload.jpg" alt="upload icon"/>
+                           <h4 className = "drag-name">Drag and drop files here</h4>
+                         </div>
+
+                         <p className="or">or</p>
+
+           <label className="choose-files">
+            Choose file
           <input
             type="file"
             accept=".csv"
             onChange={handleImportFileUpload}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            hidden
           />
-          {importFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              File: {importFile.name} ({importData.length} records loaded)
-            </p>
-          )}
+           </label>
         </div>
-        <div className="flex justify-center mb-8 btn-container">
+        {importFile && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      File: {importFile.name} ({importData.length} records loaded)
+                    </p>
+                  )}
+        </div>
+        </div>
+
+      </div>
+
+      {/* BUTTON */}
+        <div className="mapping-btn-container">
           <button
             onClick={processMapping}
             disabled={!mappingData.length || !importData.length || isProcessing}
-            className="icd-mapping-btn btn"
+            className="mapping-btn"
           >
             {isProcessing ? "Processing..." : "Map ICD-10 to ICD-11 Codes"}
           </button>
@@ -398,34 +500,35 @@ function ICDCodeMapper() {
 
       {mappedData.length > 0 && (
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
+          <div className="results-div">
+            <h2 className="results-styling">
               Results: {mappedData.length} Records Mapped
             </h2>
             <button onClick={downloadCSV} className="btn">
+             <img src = "/download.png" alt="download icon"/>
               Download CSV
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Record ID
-                  </th>
-                  {icdColumns.map((column, index) => (
-                    <React.Fragment key={index}>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {column.replace("co_", "")}
+          <div className="overflow-x-auto table-div">
+            <table className="min-w-full divide-y divide-gray-200 ">
+                  <thead className="table-header tracking-wider uppercase">
+                    <tr>
+                      <th className="table-header tracking-wider uppercase">
+                        Record ID
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-100">
-                        {column.replace("co_", "")} (ICD-11)
-                      </th>
-                    </React.Fragment>
-                  ))}
-                </tr>
-              </thead>
+                      {icdColumns.map((column, index) => (
+                        <React.Fragment key={index}>
+                          <th className="table-header tracking-wider uppercase">
+                            {column.replace("co_", "")}
+                          </th>
+                          <th className="table-header uppercase tracking-wider">
+                            {column.replace("co_", "")} (ICD-11)
+                          </th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {mappedData.slice(0, 5).map((record, index) => (
                   <tr key={index}>
@@ -452,10 +555,9 @@ function ICDCodeMapper() {
                   <tr>
                     <td
                       colSpan={1 + icdColumns.length * 2}
-                      className="px-6 py-4 text-center text-sm text-gray-500"
+                      className="record-display"
                     >
-                      Showing 5 of {mappedData.length} records. Download CSV for
-                      complete data.
+                      Showing 5 of {mappedData.length} records.
                     </td>
                   </tr>
                 )}

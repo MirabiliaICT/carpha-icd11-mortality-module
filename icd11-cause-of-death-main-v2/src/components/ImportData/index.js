@@ -6,29 +6,19 @@ import moment from 'moment';
 import { Button, Table , message, Upload, List, Typography, Progress} from "antd";
 import { UploadOutlined , CheckCircleTwoTone } from '@ant-design/icons';
 
+
 import { generateDhis2Payload, generateDhis2Payloadx, generateBulkDhis2Payload } from "../../utils";
 import { Hooks } from "tracker-capture-app-core";
 import { generateCode } from "../../utils";
 
-import {  getToken } from "../../utils/icd11";
+import { getToken } from "../../utils/icd11";
 
-// import { UploadOutlined } from '@ant-design/icons';
 import {
     mutateTei,
     mutateAttribute,
     mutateEnrollment,
     mutateEvent
-  } from "../../redux/actions/data";
-
-
-//Methods that this class would include are but not limited to 
-// 1 a method that updates the count of the rejected / accepted / ignored import from doris
-// 2 On the long run th evision is for this module to produce a csv with pre-determined cause of death and results from doris 
-// - the result would be a csv file which we would now decide as a team to either 
-// a. have a button that directly imports the resulting csv directly into dhis 
-// (we now have to think of how to handle the failed ones)
-// b. ALternativelity decide if we wantto import the converted data into dhis using the import export app 
-
+} from "../../redux/actions/data";
 
 // const [loading,setLoading]=useState(false);
 const { useApi } = Hooks;
@@ -40,8 +30,35 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
     const fileInputRef = useRef(null);
     const [orgUnits, setOrgUnits] = useState([]);
     const [selectedOrgUnit, setSelectedOrgUnit] = useState('');
+
+    // Separate state for DORIS section
+    const [dorisFileData, setDorisFileData] = useState(null);
+    const [dorisProcessingData, setDorisProcessingData] = useState({
+        isProcessing: false,
+        hasStarted: false,
+        totalRows: 0,
+        processedRows: 0,
+        data: [],
+        error: null,
+        errorCount: 0,
+        erroredRows: []
+    });
+
+    // Separate state for DHIS section
+    const [dhisFileData, setDhisFileData] = useState(null);
+    const [dhisProcessingData, setDhisProcessingData] = useState({
+        isProcessing: false,
+        hasStarted: false,
+        totalRows: 0,
+        processedRows: 0,
+        data: [],
+        error: null,
+        errorCount: 0,
+        erroredRows: []
+    });
+    
     const [fileData, setFileData] = useState(null);
-    const [loading,setLoading]=useState(false);
+    const [loading, setLoading] = useState(false);
     const [processingData, setProcessingData] = useState({
         isProcessing: false,
         hasStarted: false,
@@ -53,25 +70,20 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
         erroredRows: []
     });
 
-    const [processingDhisData, setProcessingDhisData] = useState({
-        isProcessing: false,
-        hasStarted: false,
-        totalRows: 0,
-        processedRows: 0,
-        data: [],
-        error: null,
-        errorCount: 0,
-        erroredRows: []
-    });
+    
+  const [fileList, setFileList] = useState([]);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+
     const [progress, setProgress] = useState(0);
     const { dataApi, metadataApi } = useApi();
     const { keyUiLocale } = metadata;
 
-  
+
     const handleDorisUploadFileSelection = (event) => {
         const file = event.target.files[0];
         if (!file) return;
-    
+
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
@@ -79,16 +91,16 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                 let parsedData = [];
                 let headers = [];
 
-    
+
                 if (file.type === "application/json") {
                     if (parsedData.length > 0) {
                         headers = Object.keys(parsedData[0]); // Extract headers from the first object
                     }
                 } else if (file.type === "text/csv") {
                     const rows = content.split('\n').filter(line => line.trim() !== '');
-                    
+
                     if (rows.length > 0) {
-                         headers = rows[0].split(','); 
+                        headers = rows[0].split(',');
                         for (let i = 1; i < rows.length; i++) {
                             const values = rows[i].split(',');
                             const rowData = {};
@@ -101,24 +113,24 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                 } else {
                     throw new Error('Unsupported file format');
                 }
-    
-                setFileData({
+
+                setDorisFileData({
                     content: parsedData,
                     fileName: file.name,
                     type: file.type,
-                    headers: headers 
+                    headers: headers
                 });
-    
-                setProcessingData({
+
+                setDorisProcessingData({
                     isProcessing: false,
                     totalRows: parsedData.length,
                     processedRows: 0,
                     data: parsedData,
                     error: null
                 });
-    
+
             } catch (error) {
-                setProcessingData(prev => ({
+                setDorisProcessingData(prev => ({
                     ...prev,
                     error: error.message
                 }));
@@ -129,17 +141,17 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
     // Start processing
     const beginDorisCodProcessing = async () => {
-        if (!fileData || !fileData.content) {
+        if (!dorisFileData || !dorisFileData.content) {
             console.log("There is no data in the file ---------Error!!!");
             return;
         }
-    
-        const { content, headers } = fileData;
-        console.log("Extracted Headers:", headers); 
-          
+
+        const { content, headers } = dorisFileData;
+        console.log("Extracted Headers:", headers);
+
         const dataRows = content.slice(0); // Skip the header row
-    
-        setProcessingData(prev => ({
+
+        setDorisProcessingData(prev => ({
             ...prev,
             isProcessing: true,
             hasStarted: true,
@@ -150,16 +162,16 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
             errorCount: 0,
             erroredRows: []
         }));
-    
+
         try {
             await processCertificateList(content, icdApi_clientToken, 100, headers);
         } catch (error) {
-            setProcessingData(prev => ({
+            setDorisProcessingData(prev => ({
                 ...prev,
                 error: error.message
             }));
         } finally {
-            setProcessingData(prev => ({
+            setDorisProcessingData(prev => ({
                 ...prev,
                 isProcessing: false
             }));
@@ -168,20 +180,20 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
     // Process a single certificate
     const processCertificate = async (deathCertificate, access) => {
-         
-      const baseUrl = "https://id.who.int/icd/release/11/2024-01/doris";
 
-      const url = new URL(baseUrl);
-  
-      // Function to conditionally append parameters
-      const appendIfNotNull = (key, value) => {
-      if (value !== null && value !== undefined && value !== '') {
-          url.searchParams.append(key, value);
-      }
-      };
-  
-  // Conditionally appending parameters
-       appendIfNotNull("sex", deathCertificate.Sex);
+        const baseUrl = "https://id.who.int/icd/release/11/2024-01/doris";
+
+        const url = new URL(baseUrl);
+
+        // Function to conditionally append parameters
+        const appendIfNotNull = (key, value) => {
+            if (value !== null && value !== undefined && value !== '') {
+                url.searchParams.append(key, value);
+            }
+        };
+
+        // Conditionally appending parameters
+        appendIfNotNull("sex", deathCertificate.Sex);
         appendIfNotNull("estimatedAge", deathCertificate.EstimatedAge);
         appendIfNotNull("dateBirth", deathCertificate.DateBirth);
         appendIfNotNull("dateDeath", deathCertificate.DateDeath);
@@ -193,7 +205,7 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
         appendIfNotNull("causeOfDeathCodeD", deathCertificate.CauseOfDeathCodeD);
         appendIfNotNull("causeOfDeathCodeE", deathCertificate.CauseOfDeathCodeE);
 
-        
+
         appendIfNotNull("causeOfDeathURIA", deathCertificate.CauseOfDeathURIA);
         appendIfNotNull("causeOfDeathURIB", deathCertificate.CauseOfDeathURIB);
         appendIfNotNull("causeOfDeathURIC", deathCertificate.CauseOfDeathURIC);
@@ -244,82 +256,83 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
           } else {
               throw new Error('Failed to process certificate');
           }
+
     };
-   
+
     const processCertificateList = async (deathCertificates, access, delayInMillis, headers) => {
-          const apiResponsesProcessedList = [];
-          const erroredRows = [];
+        const apiResponsesProcessedList = [];
+        const erroredRows = [];
 
-      
-          for (const deathCertificate of deathCertificates) {
-              try {
-                  const apiResponse = await processCertificate(deathCertificate, access);
 
-                  if(apiResponse.reject == true || apiResponse.reject == "TRUE") {
+        for (const deathCertificate of deathCertificates) {
+            try {
+                const apiResponse = await processCertificate(deathCertificate, access);
+
+                if (apiResponse.reject == true || apiResponse.reject == "TRUE") {
 
                     erroredRows.push(apiResponse); // Add the errored row to the list
 
                     await new Promise(resolve => setTimeout(resolve, delayInMillis));
 
 
-                    setProcessingData(prev => ({
+                    setDorisProcessingData(prev => ({
                         ...prev,
                         processedRows: prev.processedRows + 1,
                         errorCount: prev.errorCount + 1,
                         erroredRows
                     }));
 
-                  } else {
+                } else {
                     apiResponsesProcessedList.push(apiResponse);
 
                     await new Promise(resolve => setTimeout(resolve, delayInMillis));
-  
-                    setProcessingData(prev => ({
+
+                    setDorisProcessingData(prev => ({
                         ...prev,
                         processedRows: prev.processedRows + 1
                     }));
 
-                  }     
+                }
 
-      
-              } catch (error) {
+
+            } catch (error) {
 
                 erroredRows.push(deathCertificate); // Add the errored row to the list
 
-                setProcessingData(prev => ({
+                setDorisProcessingData(prev => ({
                     ...prev,
                     processedRows: prev.processedRows + 1,
                     errorCount: prev.errorCount + 1,
                     erroredRows
                 }));
 
-                  console.error(`Error processing certificate ${deathCertificate.CertificateKey}:`, error);
-              }
-          }
+                console.error(`Error processing certificate ${deathCertificate.CertificateKey}:`, error);
+            }
+        }
 
-          console.log("writeCsv----" + headers)
-          console.log("writeCsv----" + deathCertificates)
+        console.log("writeCsv----" + headers)
+        console.log("writeCsv----" + deathCertificates)
 
-      
-          writeCsv(apiResponsesProcessedList, `sample${Math.random()}.csv`,headers, deathCertificates);
 
-          if (erroredRows.length > 0) {
-            downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`,headers, deathCertificates);; // Automatically download errors CSV if errors exist
+        writeCsv(apiResponsesProcessedList, `sample${Math.random()}.csv`, headers, deathCertificates);
+
+        if (erroredRows.length > 0) {
+            downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`, headers, deathCertificates);; // Automatically download errors CSV if errors exist
         }
 
         if (fileInputRef.current) {
             fileInputRef.current.value = ''; // Clear the file input
         }
 
-        setFileData(null); // Clear the file data
+        setDorisFileData(null); // Clear the file data
 
-        
+
     };
-  
+
     const writeCsv = (responses, filePath, originalHeadersx, originalData) => {
         // Combine the original headers with the report headers
         const header = [...originalHeadersx, "stemCode", "stemURI", "code", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
-    
+
         // Escape special characters in the report field
         const escapeReport = (report) => {
             if (!report) return '';
@@ -327,13 +340,13 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
             return `"${report}"`; // Wrap the report in double quotes to handle commas
         };
 
-                // Escape special characters in the report field
+        // Escape special characters in the report field
         const escapeWarning = (warning) => {
             if (!warning) return '';
             warning = warning.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
             return `"${warning}"`; // Wrap the report in double quotes to handle commas
         };
-    
+
         // Create CSV content
         const csvContent = [
             header.join(","), // Header row
@@ -352,7 +365,7 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                 ].join(","); // Join the row with commas
             })
         ].join("\n"); // Join all rows with newlines
-    
+
         // Create and download the CSV file
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -388,9 +401,9 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                     response.error,
                     response.warning
                 ].join(","); // Join the row with commas
-    })
+            })
         ].join("\n");
-    
+
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -401,27 +414,39 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
         document.body.removeChild(link);
     };
 
-    const columns = [
+    const dorisColumns = [
         { title: 'Metric', dataIndex: 'metric', key: 'metric' },
         { title: 'Value', dataIndex: 'value', key: 'value' }
     ];
 
-    const dataSource = [
-        { key: '1', metric: 'Total Rows', value: processingData.totalRows },
-        { key: '2', metric: 'Processed Rows', value: processingData.processedRows },
-        { key: '3', metric: 'Errors', value:processingData.errorCount },
-        { key: '4', metric: 'Progress', value: `${((processingData.processedRows / processingData.totalRows) * 100).toFixed(1)}%` }
+    const dorisDataSource = [
+        { key: '1', metric: 'Total Rows', value: dorisProcessingData.totalRows },
+        { key: '2', metric: 'Processed Rows', value: dorisProcessingData.processedRows },
+        { key: '3', metric: 'Errors', value: dorisProcessingData.errorCount },
+        { key: '4', metric: 'Progress', value: `${((dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100).toFixed(1)}%` }
     ];
 
-    const fetctOrgUnits = async ()=>{
-    try{
-    const orgUnits = await metadataApi.getOrgUnitsLevel3();
-    console.error('Expected an array' + orgUnits);
-    console.error('Expected an arrayxxxx' + orgUnits.organisationUnits);
-    return orgUnits.organisationUnits
-    }catch(error){
-    console.error('Expected an array but got:vvvvvvvvvvvvvvvvvvvvvvvvv');
-    }
+     const dhisColumns = [
+        { title: 'Metric', dataIndex: 'metric', key: 'metric' },
+        { title: 'Value', dataIndex: 'value', key: 'value' }
+    ];
+
+    const dhisDataSource = [
+        { key: '1', metric: 'Total Rows', value: dhisProcessingData.totalRows },
+        { key: '2', metric: 'Processed Rows', value: dhisProcessingData.processedRows },
+        { key: '3', metric: 'Errors', value: dhisProcessingData.errorCount },
+        { key: '4', metric: 'Progress', value: `${((dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100).toFixed(1)}%` }
+    ];
+
+    const fetctOrgUnits = async () => {
+        try {
+            const orgUnits = await metadataApi.getOrgUnitsLevel3();
+            console.error('Expected an array' + orgUnits);
+            console.error('Expected an arrayxxxx' + orgUnits.organisationUnits);
+            return orgUnits.organisationUnits
+        } catch (error) {
+            console.error('Expected an array but got:vvvvvvvvvvvvvvvvvvvvvvvvv');
+        }
 
     }
 
@@ -438,47 +463,22 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                 console.error('Expected an array but got:', units);
             }
         };
-    
+
         loadOrgUnits();
     }, []);
- 
+
     const handleOrgUnitChange = (event) => {
         setSelectedOrgUnit(event.target.value);
         console.log('Selected Organization Unit ID:', event.target.value);
     };
 
 
-  const [fileList, setFileList] = useState([]);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-
-  const handleBeforeUpload = (file) => {
-    setFileList([file]); // Only allow one file
-    setUploadSuccess(false); 
-    return false; 
-  }
-
-  const handleUploadToDhis = async () => {
-    if (!fileList.length) {
-      message.warning("Please select a file before uploading to DHIS.");
-      return;
-    }
-
-    try {
-      await handleFileUploadToDhis(fileList[0]); // Your existing method
-      setUploadSuccess(true);
-      message.success("File uploaded to DHIS successfully.");
-    } catch (err) {
-      message.error("Error uploading to DHIS.");
-      console.error(err);
-    }
-  };
-
     const handleFileUploadToDhis = (file) => {
         
         const formMapping = require("../../asset/metadata/mapping.json");
-    
+
         if (!file) return false;
-    
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
@@ -487,13 +487,13 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                 let headers = [];
                 let orgUnitID = selectedOrgUnit;
 
-                    if (file.type === "text/csv") {
+                if (file.type === "text/csv") {
                     const rows = content.split('\n').filter(line => line.trim() !== '');
                     if (rows.length > 0) {
                         headers = rows[0].split(',').map(header => header.trim());
                         const dataElementsMapping = formMapping.dataElements;
                         const dataAttributesMapping = formMapping.attributes;
-    
+
                         // Mapping headers to dataElement/attribute IDs
                         const mappedHeaders = headers.map(header => {
                             const dataElementKey = Object.keys(dataElementsMapping).find(
@@ -502,49 +502,57 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                             if (dataElementKey) {
                                 return { type: "dataElement", id: dataElementsMapping[dataElementKey] };
                             }
-    
+
                             const attributeKey = Object.keys(dataAttributesMapping).find(
                                 key => key.toLowerCase() === header.toLowerCase()
                             );
                             if (attributeKey) {
+
+                                console.log( attributeKey  + "attributeattribute")
                                 return { type: "attribute", id: dataAttributesMapping[attributeKey] };
                             }
-    
+
                             return { type: "unknown", id: header };
                         });
-    
+
                         for (let i = 1; i < rows.length; i++) {
                             const values = rows[i].split(',');
                             const dataValues = [];
                             const attributeValues = [];
 
-    
+
                             for (let j = 0; j < headers.length; j++) {
                                 const mappedHeader = mappedHeaders[j];
                                 const valueCLeaned = values[j] ? values[j].trim() : "";
-                                const value  = valueCLeaned !== null ? valueCLeaned : "";
+                                const value = valueCLeaned !== null ? valueCLeaned : "";
 
-    
+
                                 if (mappedHeader.type === "dataElement") {
 
                                     dataValues.push({ dataElement: mappedHeader.id, value });
                                 }
 
                                 if (mappedHeader.type === "attribute") {
+
                                     attributeValues.push({ attribute: mappedHeader.id, value });
+
+                                    console.log("attribute logged " +  mappedHeader.id);
+
+                                   console.log("attribute  value logged " +  value);
+
                                 }
                             }
-    
+
                             // Build the payload structure for each row
                             const trackID  = generateCode();
                             const trackentitytype  = generateCode();
                             const enrollmentID  = generateCode();
                             const programid = "ogrOUKoSaWA";
-                            const programStageId = "WlWJt4lVSWw";
-                           const trackedEntityTypeId =  'RQrHOJGKT5H';
-                        //    const trackedEntityTypeId =  'nEenWmSyUEp';
+                            const programStageId = 'WlWJt4lVSWw';
+                            const trackedEntityTypeId = 'RQrHOJGKT5H';
+                            //    const trackedEntityTypeId =  'nEenWmSyUEp';
 
-                           const dateandTime = new Date().toISOString().split('T')[0];
+                            const dateandTime = new Date().toISOString().split('T')[0];
 
                             const eventPayload = {
 
@@ -582,8 +590,8 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                                      ] ,
                                 attributes: attributeValues,
 
-                                isDirty: true,
-                                isNew: true
+                                    isDirty: true,
+                                    isNew: true
 
                                 },
 
@@ -594,114 +602,41 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                                     trackedEntityType: trackedEntityTypeId,
                                     lastUpdatedAtClient: dateandTime,
                                     //storedBy : thu username 
-                                    potentialDuplicate:false,
-                                    inactive:false,
-                                    deleted:false,
-                                    featureType:"NONE",
+                                    potentialDuplicate: false,
+                                    inactive: false,
+                                    deleted: false,
+                                    featureType: "NONE",
 
                                     lastUpdatedByUserInfo: {
-                                        uid:"xE7jOejl9FI",
-                                        firstName:"John",
-                                        surname:"Traore",
-                                        username:"admin"
+                                        uid: "xE7jOejl9FI",
+                                        firstName: "John",
+                                        surname: "Traore",
+                                        username: "admin"
                                     },
-                                    createdByUserInfo:{
-                                        uid:"xE7jOejl9FI",
-                                        firstName:"John",
-                                        surname:"Traore",
-                                        username:"admin"
-                                     },
+                                    createdByUserInfo: {
+                                        uid: "xE7jOejl9FI",
+                                        firstName: "John",
+                                        surname: "Traore",
+                                        username: "admin"
+                                    },
 
-                                     programOwners : [
+                                    programOwners: [
                                         {
                                             ownerOrgUnit: orgUnitID,
                                             program: programid,
                                             trackedEntityInstance: trackID
                                         }
-                                     ],
-                                     relationships:[] ,
+                                    ],
+                                    relationships: [],
 
                                      orgUnit: orgUnitID,
                                      program: programid,
                                        attributes: attributeValues,
-                                     trackedEntityInstance: trackID,
-
-                               enrollment:{
-                                 //storedBy : thu username 
-                                 createdAtClient: dateandTime,
-                                  program: programid,
-                                  lastUpdated: dateandTime,
-                                  created: dateandTime,
-                                  orgUnit: orgUnitID,
-                                  enrollment: enrollmentID,      // Keep the ID
-                                  trackedEntityInstance: trackID,
-                                trackedEntityType: trackedEntityTypeId,
-                                    //orgUnitName: fetch from api 
-                                lastUpdatedAtClient: dateandTime,
-                                enrollmentDate: new Date().toISOString().split('T')[0],
-                                deleted: false,
-                                incidentDate: new Date().toISOString().split('T')[0],
-                                status: "COMPLETED",
-                                lastUpdatedByUserInfo: {
-                                        uid:"M5zQapPyTZI",
-                                        firstName:"admin",
-                                        surname:"admin",
-                                        username:"admin"
-                                    },
-                                createdByUserInfo:{
-                                        uid:"M5zQapPyTZI",
-                                        firstName:"admin",
-                                        surname:"admin",
-                                        username:"admin"
-                                     },
-                                notes:[  
-                                     ],
-                                relationships:[                                   
-                                     ] ,
-                                attributes: attributeValues,
-
-                                isDirty: true,
-                                isNew: true
-
-                                }
-
-
+                                     trackedEntityInstance: trackID
                                 },
-                                events: {
+                                events: { },
                                 event: {
                                     event: generateCode(),
-                                    isDirty: true,
-                                    isNew: true,
-                                    orgUnit: orgUnitID,
-                                    enrollment: enrollmentID,
-                                    trackedEntityInstance: trackID,
-                                    program: programid,
-                                    programStage: programStageId,
-                                    dataValues: dataValues,
-                                    eventDate: new Date().toISOString().split('T')[0],
-                                    dueDate: new Date().toISOString().split('T')[0]
-
-                                    // dataElements: dataValues.dataElement
-
-
-                                },
-                                event: generateCode(),
-                                isDirty: true,
-                                isNew: true,
-                                orgUnit: orgUnitID,
-                                enrollment: enrollmentID,
-                                trackedEntityInstance: trackID,
-                                program: programid,
-                                programStage: programStageId,
-                                dataValues: dataValues,
-                                eventDate: new Date().toISOString().split('T')[0],
-                                dueDate: new Date().toISOString().split('T')[0]
-                                // dataValues: dataValues,
-                                // // dataElements: dataValues.dataElement,
-                                // programStage: "WlWJt4lVSWw"
-                            },
-                            event: {
-                                event: generateCode(),
                                     isDirty: false,
                                     isNew: true,
                                     orgUnit: orgUnitID,
@@ -711,9 +646,9 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                                     programStage: programStageId,
                                     dataValues: dataValues,
                                     eventDate: new Date().toISOString().split('T')[0],
-                                    dueDate: new Date().toISOString().split('T')[0]
-
-                            }
+                                    dueDate: new Date().toISOString().split('T')[0],
+                                    attributes: attributeValues
+                                }
                             };
                             parsedData.push(eventPayload);
                         }
@@ -721,31 +656,37 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
                     console.log("parsedDataparsedDataparsedData" + parsedData);
 
-                   
+
 
                 } else {
                     throw new Error('Unsupported file format');
                 }
 
-                setFileData({
+                setDhisFileData({
                     content: parsedData,
                     fileName: file.name,
                     type: file.type,
                     headers: headers,
-                    orgUnitID : selectedOrgUnit
+                    orgUnitID: selectedOrgUnit
                 });
-    
-                setProcessingDhisData({
+
+                setDhisProcessingData({
                     isProcessing: false,
                     totalRows: parsedData.length,
                     processedRows: 0,
                     data: parsedData,
                     error: null
                 });
-    
+
                 console.log("Generated Parsed Payload:", parsedData);
                 let processedCount = 0;
                 const totalRows = parsedData.length;
+
+                setDhisProcessingData(prev => ({
+                    ...prev,
+                    isProcessing: true,
+                    hasStarted: true
+                }));
 
                 for (const data of parsedData) {
 
@@ -763,51 +704,62 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                         console.log("enrollmentenrollment" + enrollment);
                         console.log("eventevent" + events);
 
-                        
+
                         await dataApi.pushTrackedEntityInstance(
                             data.trackedEntityInstance,
                             programMetadata.id
-                          );
+                        );
 
                         await dataApi.pushEnrollment(
                             data.enrollment,
                             programMetadata.id
-                          );                              
+                        );
 
-                          await dataApi.pushEvents({ events: [data.event] });
-                          console.log("DOneeeeeee" );
+                        await dataApi.pushEvents({ events: [data.event] });
+                        console.log("DOneeeeeee");
 
 
                     } catch (error) {
                         // console.error(`Error processing data for TEI: ${currentTei.trackedEntityInstance}`, error);
                     }
 
-                processedCount++;
-                setProgress(Math.round((processedCount / totalRows) * 100));
+                    processedCount++;
+                    setProgress(Math.round((processedCount / totalRows) * 100));
+
+                    setDhisProcessingData(prev => ({
+                        ...prev,
+                        processedRows: processedCount
+                    }));
                 }
 
+                setDhisProcessingData(prev => ({
+                        ...prev,
+                        processedRows: false
+                    }));
 
-    
+
+
             } catch (error) {
-                setProcessingDhisData(prev => ({
+                setDhisProcessingData(prev => ({
                     ...prev,
                     error: error.message
                 }));
             }
         };
-    
+
         reader.readAsText(file);
         return false;
     };
-    
+
     const uploadProps = {
         beforeUpload: handleFileUploadToDhis,
         showUploadList: false,
     };
 
-    const handleCloseTable = () => {
-        // Reset the processing state
-        setProcessingData({
+    
+    const handleCloseDorisTable = () => {
+        // Reset the DORIS processing state
+        setDorisProcessingData({
             isProcessing: false,
             hasStarted: false,
             processedRows: 0,
@@ -815,174 +767,173 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
             errorCount: 0,
             erroredRows: []
         });
-    
+
         // Optionally clear the file data as well
-        setFileData(null);
-    
-        console.log("Processing table closed successfully.");
+        setDorisFileData(null);
+
+        console.log("DORIS Processing table closed successfully.");
     };
-    
-  
+
+    const handleCloseDhisTable = () => {
+        // Reset the DHIS processing state
+        setDhisProcessingData({
+            isProcessing: false,
+            hasStarted: false,
+            processedRows: 0,
+            totalRows: 0,
+            errorCount: 0,
+            erroredRows: []
+        });
+
+        // Optionally clear the file data as well
+        setDhisFileData(null);
+
+        console.log("DHIS Processing table closed successfully.");
+    };
+
+
+
     return (
 
 
-        <div style={{ padding: 20, maxWidth: 800, margin: 'auto' }}>
-            <h1 style={{ textAlign: 'center', marginBottom: 20 }}>Mortality and Morbidity Data Import Module</h1>
-            
-            {/* DORIS Import Section */}
+        <div style={{ padding: 20, maxWidth: '95%', margin: 'auto'}}>
+            <h1 style={{ textAlign: 'center', marginBottom: 20, color: '#125887', fontSize: '38px', width: '40%', margin: '10px auto 20px auto'}}>Mortality and Morbidity Data Import Module</h1>
 
-            <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20 , position: 'relative'}}>
-                <h2>DORIS ICD-11 Underlying Cause of Death </h2>
-                <p>Upload a csv file containing mortality data for the generation of Underlying COD.</p>
-                <input type="file" accept=".json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
-                <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button>
-                {fileData && !processingData.isProcessing && (
-                    <Button type="primary" onClick={beginDorisCodProcessing}>Start Import</Button>
+            {/* Import General Section*/}
+            <div className="general-wrapper" style={{ width: '80%', display: 'flex', margin: 'auto', justifyContent: 'space-between'}}>
+                {/* DORIS Import Section */}
+            <div className="doris-import-wrapper" style={{ margin: '0 auto'}}>
+                
+
+                <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, position: 'relative', height: '230px', width: '600px' }}>
+                    <h2 style={{ fontSize: '28px'}}>DORIS ICD-11 Underlying Cause of Death </h2>
+                    <p style={{ color: '#6E6E6E'}}>Upload a csv file containing mortality data for the generation of Underlying COD.</p>
+                    <input type="file" accept=".json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
+                    <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10, color: '#6E6E6E', borderRadius: 5 }}>Select COD FIle</Button>
+                    {dorisFileData && !dorisProcessingData.isProcessing && (
+                        <Button style={{backgroundColor: '#125887', borderRadius: 5}} type="primary" onClick={beginDorisCodProcessing}>Start Data Import</Button>
+                    )}
+                </div>
+
+                {/* Processing Section */}
+                {(dorisProcessingData.isProcessing || dhisProcessingData.processedRows >= 1) && (
+                    <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, width: '553px', margin: 'auto' }}>
+                        <h3>Processing: {dorisFileData?.fileName}</h3>
+                        <Table columns={dorisColumns} dataSource={dorisDataSource} pagination={false} bordered size="small" style={{ maxWidth: '100%' }} />
+
+                        {/* Close Button */}
+                        <Button
+                            onClick={handleCloseDorisTable}
+                            style={{ position: 'relative', top: 10, right: -1 }}
+                            danger
+                        >
+                            Close
+                        </Button>
+
+                        {dorisProcessingData.processedRows >= dorisProcessingData.totalRows && (
+                            <>
+                                <div style={{ marginTop: 20, color: 'green' }}>Processing complete!</div>
+
+                                {dorisProcessingData.errorCount > 0 && (
+                                    <div style={{ marginTop: 10, color: 'red' }}>
+                                        Errors Encountered: {dorisProcessingData.errorCount}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+
+                    </div>
+
+                    )}
+                                        </div>
+
+
+            {/* DHIS and its Process Table */}
+            <div className="dhis-wrapper" style={{ margin: '0 auto'}} >
+                
+                {/* DHIS Import Section */}
+                <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, height: '230px', width: '600px'}}>
+                    <h2 style={{ fontSize: '28px'}}>Mortality Data DHIS Import</h2>
+                    <p style={{ color: '#6E6E6E'}}>Upload CSV file into DHIS2.</p>
+
+
+                    {/* Organization Units Dropdown */}
+                    <div style={{ marginBottom: 20 }}>
+                        {/* <label htmlFor="orgUnitDropdown">Select Organization Unit:</label> */}
+                        <select
+                            id="orgUnitDropdown"
+                            value={selectedOrgUnit}
+                            onChange={handleOrgUnitChange}
+                            style={{ width: '100%', padding: 10, borderRadius: 5, color: '#6E6E6E', backgroundColor: '#F8F8F8'}}
+                        >
+                            <option value="">Select an organization unit</option>
+                            {orgUnits.map(unit => (
+                                <option key={unit.id} value={unit.id}>
+                                    {unit.displayName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Upload button for DHIS2 Import Section */}
+
+
+                    <Upload {...uploadProps}>
+                        <Button style={{borderRadius: 5}}icon={<UploadOutlined />}>Upload CSV</Button>
+                    </Upload>
+
+
+                    <input type="file" accept=".json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
+                    {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
+                    {dhisFileData && !dhisProcessingData.isProcessing && (
+                        <Button style={{marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5}} type="primary" onClick={beginDorisCodProcessing}>Start Data Import</Button>
+                    )}
+
+
+                </div>
+                {dhisProcessingData.error && (
+                    <div style={{color:'red', marginBottom: 10}} > Error: {dhisProcessingData.error}</div>
+                )}
+
+                {(dhisProcessingData.isProcessing || dhisProcessingData.processedRows >= 1) && (
+                    <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, width: '553px', margin: 'auto' }}>
+                        <h3>Processing: {dhisFileData?.fileName}</h3>
+                        <Table columns={dhisColumns} dataSource={dhisDataSource} pagination={false} bordered size="small" style={{ maxWidth: '100%' }} />
+
+                        {/* Close Button */}
+                        <Button
+                            onClick={handleCloseDhisTable}
+                            style={{ position: 'relative', top: 10, right: -1 }}
+                            danger
+                        >
+                            Close
+                        </Button>   
+
+                        {dhisProcessingData.processedRows >= dhisProcessingData.totalRows && (
+                            <>
+                                <div style={{ marginTop: 20, color: 'green' }}>Processing complete!</div>
+
+                                {dhisProcessingData.errorCount > 0 && (
+                                    <div style={{ marginTop: 10, color: 'red' }}>
+                                        Errors Encountered: {dhisProcessingData.errorCount}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+
+                    </div>
                 )}
             </div>
-  
-            {/* Processing Section */}
-            {(processingData.isProcessing || processingData.processedRows >= 1)  && (
-            <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20 }}>
-            <h3>Processing: {fileData?.fileName}</h3>
-            <Table columns={columns} dataSource={dataSource} pagination={false} bordered size="small" style={{ maxWidth: '100%' }} />
-
-           {/* Close Button */}
-            <Button 
-            onClick={handleCloseTable} 
-            style={{ position: 'relative', top: 10, right: -1 }}
-            danger
-            >
-            Close
-            </Button>
-
-            {processingData.processedRows >= processingData.totalRows && (
-            <>
-             <div style={{ marginTop: 20, color: 'green' }}>Processing complete!</div>
-
-            {processingData.errorCount > 0 && (
-                    <div style={{ marginTop: 10, color: 'red' }}>
-                        Errors Encountered: {processingData.errorCount}
-                    </div>
-            )}
-            </>
-        )}
-        
-
-    </div>
-    )}
-
-
-   
-            {/* DHIS Import Section */}
-            <div style={{ padding: 20, border: '1px solid #ddd', borderRadius: 10, marginBottom: 20 }}>
-                <h2>Mortality Data DHIS Import</h2>
-                <p>Upload CSV file into DHIS2.</p>
-
-
-          {/* Organization Units Dropdown */}
-          <div style={{ marginBottom: 20 }}>
-                <label htmlFor="orgUnitDropdown">Select Organization Unit:</label>
-                <select
-                    id="orgUnitDropdown"
-                    value={selectedOrgUnit}
-                    onChange={handleOrgUnitChange}
-                    style={{ width: '100%', padding: 10, borderRadius: 5 }}
-                >
-                    <option value="">Select an organization unit</option>
-                    {orgUnits.map(unit => (
-                        <option key={unit.id} value={unit.id}>
-                            {unit.displayName}
-                        </option>
-                    ))}
-                </select>
             </div>
 
-<>
-              <Upload
-        beforeUpload={handleBeforeUpload}
-        fileList={fileList}
-        onRemove={() => {
-          setFileList([]);
-          setUploadSuccess(false);
-        }}
-        showUploadList={false}
-      >
-        <Button icon={<UploadOutlined />}>Select CSV File</Button>
-      </Upload>
 
-      {fileList.length > 0 && (
-        <List
-          size="small"
-          bordered
-          dataSource={fileList}
-          renderItem={(file) => (
-            <List.Item>
-              <Typography.Text>{file.name}</Typography.Text>
-              {uploadSuccess && (
-                <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginLeft: 8 }} />
-              )}
-            </List.Item>
-          )}
-        />
-      )}
-
-      <Button
-        type="primary"
-        style={{ marginTop: 10 }}
-        onClick={handleUploadToDhis}
-        disabled={fileList.length === 0}
-      >
-        Upload to DHIS
-      </Button>
-    </>
-
-
-
-                {/* {selectedOrgUnit && (
-                <Upload {...uploadProps}>
-                    <Button icon={<UploadOutlined />}>Upload CSV</Button>
-                </Upload>
-                )} */}
-
-
-
-            </div>
-            
-
-
-            {/* Error Message */}
-            {processingData.error && (
-                <div style={{ color: 'red', marginBottom: 10 }}>Error: {processingData.error}</div>
-            )}
-            
-            {/* Save Button */}
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
-                <Button
-                    type="primary"
-                    style={{ width: '110px' }}
-                    loading={loading}
-                    onClick={async () => {
-                        if (!fileData || !fileData.content) {
-                            message.error("No file data to save!");
-                            return;
-                        }
-                        setLoading(true);
-                        const { currentEvents } = generateDhis2Payload(fileData, processingData);
-                        await dataApi.pushEvents({ events: currentEvents });
-                        mutateEvent(currentEvents[0].event, "isDirty", false);
-                        setLoading(false);
-                        message.success("Saved Successfully!");
-                    }}
-                >
-                    Save
-                </Button>
-            </div>
-
-            
         </div>
+
+
     );
-    
+
 };
 
 const mapStateToProps = (state) => {
@@ -990,10 +941,9 @@ const mapStateToProps = (state) => {
       metadata: state.metadata,
       data: state.data,
     icdApi_clientToken: state.metadata.icdApi_clientToken,
-        keyUILocale: state.metadata.keyUiLocale,
-
+        keyUILocale: state.metadata.keyUiLocale
 
     };
-  };
+};
 
 export default connect(mapStateToProps)(ImportData);
