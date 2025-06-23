@@ -398,6 +398,10 @@ const Profile = ({
     }
   }, [data])
 
+
+    console.log('Metadata:------', metadata); // Check if metadata exists
+  console.log('Data:--------', data);       // Check if data exists
+
   useEffect(() => {
     if ( currentEnrollment["enrollmentDate"] && currentEnrollment["incidentDate"] ) {
       if ( currentEnrollment["enrollmentDate"] < currentEnrollment["incidentDate"] ) {
@@ -406,32 +410,82 @@ const Profile = ({
     }
   }, [currentEnrollment["enrollmentDate"],currentEnrollment["incidentDate"]]);
 
-  const getTeaMetadata = (attribute) => programMetadata.trackedEntityAttributes.find((tea) => tea.id === attribute);
+
+  const getTeaMetadata = (attribute) => {
+  console.log(attribute + " attributeattribute ----------------------------------");
+
+  const tea = programMetadata.trackedEntityAttributes.find((tea) => tea.id === attribute);
+
+  console.log("Found TEA:", tea); // Optional debugging
+  return tea; // not tea.id — you want the full metadata object
+};
+
+  // const getTeaMetadata = (attribute) => {
+  //   console.log(attribute + "attributeattribute ----------------------------------")
+
+
+  //   programMetadata.trackedEntityAttributes.find((tea) => tea.id === attribute);
+
+  // //         console.log(`Attribute----------------------------- ${attribute}:`, tea); // Log each attribute lookup
+  // // console.log(`Attribute----------------------------- ${tea}:`, tea); // Log each attribute lookup
+
+  // return tea.id;
+
+  // };
 
   const getTeaValue = (attribute) => currentTei.attributes[attribute] ? currentTei.attributes[attribute] : "";
 
-  const populateInputField = attribute => {
-    const tea = getTeaMetadata(attribute);
-    const value = getTeaValue(attribute);
+  // const populateInputField = attribute => {
+  //   const tea = getTeaMetadata(attribute);
+  //   const value = getTeaValue(attribute);
 
-    console.log(tea.displayFormName + "Form name ----------------------------------")
+  //   console.log(tea + "Form name ----------------------------------")
     
-   console.log(tea.valueSet + "Value setrtttt--------------")
+  // //  console.log(tea.valueSet + "Value setrtttt--------------")
 
-    return (
-      <InputField
-        value={ value }
-        valueType={tea.valueType}
-        label={tea.displayFormName}
-        valueSet={tea.valueSet}
-        change={(value) => {
-          mutateAttribute(tea.id, value);
-        }}
-        disabled={attribute === formMapping.attributes["system_id"] || enrollmentStatus === "COMPLETED"}
-        mandatory={tea.compulsory}
-      />
-    );
-  };
+  //   return (
+  //     <InputField
+  //       value={ value }
+  //       valueType={tea.valueType}
+  //       label={tea.displayFormName}
+  //       // valueSet={tea.valueSet}
+  //       change={(value) => {
+  //         mutateAttribute(tea.id, value);
+  //       }}
+  //       disabled={attribute === formMapping.attributes["system_id"] || enrollmentStatus === "COMPLETED"}
+  //       mandatory={tea.compulsory}
+  //     />
+  //   );
+  // };
+
+  const populateInputField = (attribute) => {
+  if (!attribute) {
+    console.warn("populateInputField called with undefined attribute");
+    return null;
+  }
+
+  const tea = getTeaMetadata(attribute);
+  if (!tea) {
+    console.warn(`No metadata found for attribute: ${attribute}`);
+    return null;
+  }
+
+  const value = getTeaValue(attribute);
+  console.log(`${tea} Form name ----------------------------------`);
+
+  return (
+    <InputField
+      value={value}
+      valueType={tea.valueType}
+      label={tea.displayFormName}
+      valueSet={tea.valueSet}
+      change={(value) => mutateAttribute(tea.id, value)}
+      disabled={attribute === formMapping.attributes["system_id"] || enrollmentStatus === "COMPLETED"}
+      mandatory={tea.compulsory}
+    />
+  );
+};
+
 
   /*
   const hasUnderlying = () => {
