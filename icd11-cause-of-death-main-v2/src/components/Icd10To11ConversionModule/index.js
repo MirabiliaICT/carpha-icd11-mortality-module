@@ -376,12 +376,12 @@ if (
 
   const downloadFile = () => {
     try {
-      const publicUrl = 'Replace with the actual public URL of the file';
+      const publicUrl = '\ICD10to11conversionTable.txt';
 
       // Create download link
       const link = document.createElement('a');
       link.href = publicUrl;
-      link.download = 'filename.txt';
+      link.download = 'ICD10to11conversionTable.txt';
       link.target = '_blank';
 
       document.body.appendChild(link);
