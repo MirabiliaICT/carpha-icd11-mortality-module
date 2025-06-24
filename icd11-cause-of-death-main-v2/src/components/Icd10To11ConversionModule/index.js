@@ -590,7 +590,7 @@ if (
     {/* STEP 1 */}
     <div className="div-container">
       <div className="column-container">
-        <div className="border p-4 rounded-md flex-container">
+            <div className="rounded-md flex-container">
         <div className="steps-div">
             <p className ="steps-style">Step 1</p>
         </div>
@@ -631,7 +631,7 @@ if (
         </div>
 
          {/* STEP 2*/}
-        <div className="border p-4 rounded-md flex-container">
+        <div className="rounded-md flex-container">
         <div className="steps-div">
              <p className ="steps-style">Step 2 </p>
         </div>
@@ -696,7 +696,7 @@ if (
           </div>
 
           <div className="table-div">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="main-table">
                   <thead className="table-header tracking-wider uppercase">
                     <tr>
                       <th className="table-header tracking-wider uppercase">

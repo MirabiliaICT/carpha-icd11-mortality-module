@@ -35,9 +35,10 @@
 }
 
 .rounded-md{
-     height: 300px;
+     height: fit-content;
      border: #D8D8D8 0.5px solid;
      border-radius: 10px;
+     padding: 15px;
 }
 
 .flex-container{
@@ -56,7 +57,7 @@
 .upload-styles{
     color: #202020;
     font-weight: 400;
-    font-size: 24px;
+    font-size: 20px;
 }
 
 .upload-div{
@@ -219,7 +220,7 @@
 }
 
 .div-container {
-    width: 70%;
+    width: 80%;
     margin: auto;
 }
 
@@ -260,8 +261,12 @@
 }
 
 .table-div {
-    width: fit-content;
+    width: 100%;
     overflow-x: auto;
+}
+
+.main-table{
+    width: 100%;
 }
 
     .choose-files{
@@ -285,7 +290,7 @@
     width: 80%;
 }
     .div-container {
-        width: 80%;
+        width: fit-content;
     }
 
     .choose-files{
@@ -298,7 +303,7 @@
     }
 
     .upload-styles {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .steps-style {
@@ -363,7 +368,7 @@
         height: fit-content;
     }
     .upload-styles {
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .btn img {
