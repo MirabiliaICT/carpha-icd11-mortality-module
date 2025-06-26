@@ -5,8 +5,8 @@ import colorImage from '../../asset/chevron-left.png';
 
 import { useTranslation } from 'react-i18next';
 import moment from 'moment';
-import { Button, Table , message, Upload, List, Typography, Progress} from "antd";
-import { UploadOutlined , CheckCircleTwoTone } from '@ant-design/icons';
+import { Button, Table, message, Upload, List, Typography, Progress } from "antd";
+import { UploadOutlined, CheckCircleTwoTone } from '@ant-design/icons';
 
 
 import { generateDhis2Payload, generateDhis2Payloadx, generateBulkDhis2Payload } from "../../utils";
@@ -27,7 +27,7 @@ const { useApi } = Hooks;
 
 
 
-const ImportData = ({metadata, icdApi_clientToken }) => {
+const ImportData = ({ metadata, icdApi_clientToken }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef(null);
     const [orgUnits, setOrgUnits] = useState([]);
@@ -230,28 +230,28 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
 
 
-  var finalUrl = url
-  
-  console.log("finalUrl: " + finalUrl);
+        var finalUrl = url
 
-  const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-          'Accept': '*/*',
-          'Accept-Encoding' : 'gzip, deflate, br',
-          // 'Connection' : 'keep-alive',
-          'API-Version': 'v2',
-          'Accept-Language': 'en',
-          'Authorization': `Bearer ${icdApi_clientToken}`
-      } 
-  });
-  
-  if (response.status === 200) {
-              const data = await response.json();
-              return data;
-          } else {
-              throw new Error('Failed to process certificate');
-          }
+        console.log("finalUrl: " + finalUrl);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': '*/*',
+                'Accept-Encoding': 'gzip, deflate, br',
+                // 'Connection' : 'keep-alive',
+                'API-Version': 'v2',
+                'Accept-Language': 'en',
+                'Authorization': `Bearer ${icdApi_clientToken}`
+            }
+        });
+
+        if (response.status === 200) {
+            const data = await response.json();
+            return data;
+        } else {
+            throw new Error('Failed to process certificate');
+        }
 
     };
 
@@ -458,7 +458,7 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
 
     const handleFileUploadToDhis = (file) => {
-        
+
         const formMapping = require("../../asset/metadata/mapping.json");
 
         if (!file) return false;
@@ -497,7 +497,7 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                             );
                             if (attributeKey) {
 
-                                console.log( attributeKey  + "attributeattribute")
+                                console.log(attributeKey + "attributeattribute")
                                 return { type: "attribute", id: dataAttributesMapping[attributeKey] };
                             }
 
@@ -525,9 +525,9 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
                                     attributeValues.push({ attribute: mappedHeader.id, value });
 
-                                    console.log("attribute logged " +  mappedHeader.id);
+                                    console.log("attribute logged " + mappedHeader.id);
 
-                                   console.log("attribute  value logged " +  value);
+                                    console.log("attribute  value logged " + value);
 
                                 }
                             }
@@ -544,39 +544,39 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
                             const eventPayload = {
 
-                                enrollment:{
-                                 //storedBy : thu username 
-                                 createdAtClient: dateandTime,
-                                  program: programid,
-                                  lastUpdated: dateandTime,
-                                  created: dateandTime,
-                                  orgUnit: orgUnitID,
-                                  enrollment: enrollmentID,      // Keep the ID
-                                  trackedEntityInstance: trackID,
-                                trackedEntityType: trackedEntityTypeId,
+                                enrollment: {
+                                    //storedBy : thu username 
+                                    createdAtClient: dateandTime,
+                                    program: programid,
+                                    lastUpdated: dateandTime,
+                                    created: dateandTime,
+                                    orgUnit: orgUnitID,
+                                    enrollment: enrollmentID,      // Keep the ID
+                                    trackedEntityInstance: trackID,
+                                    trackedEntityType: trackedEntityTypeId,
                                     //orgUnitName: fetch from api 
-                                lastUpdatedAtClient: dateandTime,
-                                enrollmentDate: new Date().toISOString().split('T')[0],
-                                deleted: false,
-                                incidentDate: new Date().toISOString().split('T')[0],
-                                status: "COMPLETED",
-                                lastUpdatedByUserInfo: {
-                                        uid:"M5zQapPyTZI",
-                                        firstName:"admin",
-                                        surname:"admin",
-                                        username:"admin"
+                                    lastUpdatedAtClient: dateandTime,
+                                    enrollmentDate: new Date().toISOString().split('T')[0],
+                                    deleted: false,
+                                    incidentDate: new Date().toISOString().split('T')[0],
+                                    status: "COMPLETED",
+                                    lastUpdatedByUserInfo: {
+                                        uid: "M5zQapPyTZI",
+                                        firstName: "admin",
+                                        surname: "admin",
+                                        username: "admin"
                                     },
-                                createdByUserInfo:{
-                                        uid:"M5zQapPyTZI",
-                                        firstName:"admin",
-                                        surname:"admin",
-                                        username:"admin"
-                                     },
-                                notes:[  
-                                     ],
-                                relationships:[                                   
-                                     ] ,
-                                attributes: attributeValues,
+                                    createdByUserInfo: {
+                                        uid: "M5zQapPyTZI",
+                                        firstName: "admin",
+                                        surname: "admin",
+                                        username: "admin"
+                                    },
+                                    notes: [
+                                    ],
+                                    relationships: [
+                                    ],
+                                    attributes: attributeValues,
 
                                     isDirty: true,
                                     isNew: true
@@ -617,12 +617,12 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
                                     ],
                                     relationships: [],
 
-                                     orgUnit: orgUnitID,
-                                     program: programid,
-                                       attributes: attributeValues,
-                                     trackedEntityInstance: trackID
+                                    orgUnit: orgUnitID,
+                                    program: programid,
+                                    attributes: attributeValues,
+                                    trackedEntityInstance: trackID
                                 },
-                                events: { },
+                                events: {},
                                 event: {
                                     event: generateCode(),
                                     isDirty: false,
@@ -660,13 +660,13 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
 
                 setDhisProcessingData({
                     isProcessing: false,
-                     hasStarted: false,
+                    hasStarted: false,
                     totalRows: parsedData.length,
                     processedRows: 0,
                     data: parsedData,
                     error: null,
                     rrorCount: 0,
-                erroredRows: []
+                    erroredRows: []
                 });
 
                 console.log("Generated Parsed Payload:", parsedData);
@@ -682,13 +682,13 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
         reader.readAsText(file);
         return false;
     };
-    
-    const writeDhisCsv = (processedData, filePath, originalHeaders, originalData, erroredRows) => {
-    // Combine the original headers with the DHIS result headers
-    const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
 
-    // Escape special characters in the report field
-    const escapeReport = (report) => {
+    const writeDhisCsv = (processedData, filePath, originalHeaders, originalData, erroredRows) => {
+        // Combine the original headers with the DHIS result headers
+        const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
+
+        // Escape special characters in the report field
+        const escapeReport = (report) => {
             if (!report) return '';
             report = report.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
             return `"${report}"`; // Wrap the report in double quotes to handle commas
@@ -701,58 +701,58 @@ const ImportData = ({metadata, icdApi_clientToken }) => {
             return `"${warning}"`; // Wrap the report in double quotes to handle commas
         };
 
-    // Create CSV content
-    const csvContent = [
-        header.join(","), // Header row
-        ...processedData.map((result, index) => {
-            const originalRow = originalData[index];
-            return [
-                ...originalHeaders.map(header => originalRow[header] || ''), // Original row values
-                result.stemCode,
-                result.stemURI,
-                result.code,
-                result.trackedEntityInstance || '',
-                result.uri,
-                escapeReport(result.report),
-                result.reject || '',
-                result.error || '',
-                escapeWarning(result.warning)
-            ].join(","); // Join the row with commas
-        })
-    ].join("\n"); // Join all rows with newlines
+        // Create CSV content
+        const csvContent = [
+            header.join(","), // Header row
+            ...processedData.map((result, index) => {
+                const originalRow = originalData[index];
+                return [
+                    ...originalHeaders.map(header => originalRow[header] || ''), // Original row values
+                    result.stemCode,
+                    result.stemURI,
+                    result.code,
+                    result.trackedEntityInstance || '',
+                    result.uri,
+                    escapeReport(result.report),
+                    result.reject || '',
+                    result.error || '',
+                    escapeWarning(result.warning)
+                ].join(","); // Join the row with commas
+            })
+        ].join("\n"); // Join all rows with newlines
 
-    // Create and download the CSV file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filePath);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-const downloadDhisErrorCsv = (erroredRows, filePath, originalHeaders, originalData) => {
-    const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
-
-    const escapeReport = (report) => {
-        if (!report) return '';
-        report = report.replace(/\n/g, "\\n");
-        return `"${report}"`;
+        // Create and download the CSV file
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filePath);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
-    const csvContent = [
-        header.join(","),
-        ...erroredRows.map((errorItem, index) => {
-            // Find the original row data that corresponds to this error
-            const originalRowIndex = originalData.findIndex(row => 
-                JSON.stringify(row) === JSON.stringify(errorItem.data?.originalRow)
-            );
-            const originalRow = originalRowIndex >= 0 ? originalData[originalRowIndex] : {};
-            
-            return [
-                ...originalHeaders.map(header => originalRow[header] || ''),
-                errorItem.stemCode,
+    const downloadDhisErrorCsv = (erroredRows, filePath, originalHeaders, originalData) => {
+        const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
+
+        const escapeReport = (report) => {
+            if (!report) return '';
+            report = report.replace(/\n/g, "\\n");
+            return `"${report}"`;
+        };
+
+        const csvContent = [
+            header.join(","),
+            ...erroredRows.map((errorItem, index) => {
+                // Find the original row data that corresponds to this error
+                const originalRowIndex = originalData.findIndex(row =>
+                    JSON.stringify(row) === JSON.stringify(errorItem.data?.originalRow)
+                );
+                const originalRow = originalRowIndex >= 0 ? originalData[originalRowIndex] : {};
+
+                return [
+                    ...originalHeaders.map(header => originalRow[header] || ''),
+                    errorItem.stemCode,
                     errorItem.stemURI,
                     errorItem.code,
                     errorItem.trackedEntityInstance || '',
@@ -761,185 +761,185 @@ const downloadDhisErrorCsv = (erroredRows, filePath, originalHeaders, originalDa
                     errorItem.reject,
                     errorItem.error,
                     errorItem.warning
-            ].join(",");
-        })
-    ].join("\n");
+                ].join(",");
+            })
+        ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filePath);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filePath);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
-// Updated beginDhisCodProcessing function
-const beginDhisCodProcessing = async () => {
-    if (!dhisFileData || !dhisFileData.content) {
-        console.log("There is no data in the file ---------Error!!!");
-        return;
-    }
+    // Updated beginDhisCodProcessing function
+    const beginDhisCodProcessing = async () => {
+        if (!dhisFileData || !dhisFileData.content) {
+            console.log("There is no data in the file ---------Error!!!");
+            return;
+        }
 
-    const { content, headers } = dhisFileData;
+        const { content, headers } = dhisFileData;
 
-    setDhisProcessingData(prev => ({
-        ...prev,
-        isProcessing: true,
-        hasStarted: true,
-        totalRows: content.length,
-        processedRows: 0,
-        data: content,
-        error: null,
-        errorCount: 0,
-        erroredRows: []
-    }));
+        setDhisProcessingData(prev => ({
+            ...prev,
+            isProcessing: true,
+            hasStarted: true,
+            totalRows: content.length,
+            processedRows: 0,
+            data: content,
+            error: null,
+            errorCount: 0,
+            erroredRows: []
+        }));
 
-    const processedData = [];
-    const erroredRows = [];
+        const processedData = [];
+        const erroredRows = [];
 
-    try {
-        let processedCount = 0;
-        const totalRows = content.length;
+        try {
+            let processedCount = 0;
+            const totalRows = content.length;
 
-        for (const data of content) {
-            console.log("Generated Individual Data :", data);
+            for (const data of content) {
+                console.log("Generated Individual Data :", data);
 
-            const programid = "ogrOUKoSaWA";
-            let programMetadata;
+                const programid = "ogrOUKoSaWA";
+                let programMetadata;
 
-            try {
-                programMetadata = await metadataApi.getProgramMetadata(programid);
-                console.log("Program Metadata API call successful:", programMetadata);
-            } catch (apiError) {
-                console.error("Failed to fetch program metadata from API:", apiError);
-                console.log("Using fallback program metadata structure");
+                try {
+                    programMetadata = await metadataApi.getProgramMetadata(programid);
+                    console.log("Program Metadata API call successful:", programMetadata);
+                } catch (apiError) {
+                    console.error("Failed to fetch program metadata from API:", apiError);
+                    console.log("Using fallback program metadata structure");
 
-                programMetadata = {
-                    id: programid,
-                    trackedEntityAttributes: [],
-                    programStages: []
-                };
-            }
-
-            try {
-                if (!programMetadata) {
-                    throw new Error('Program metadata not found');
+                    programMetadata = {
+                        id: programid,
+                        trackedEntityAttributes: [],
+                        programStages: []
+                    };
                 }
 
-                console.log("Program Metadata received:", programMetadata);
-                console.log("Program Metadata keys:", Object.keys(programMetadata));
+                try {
+                    if (!programMetadata) {
+                        throw new Error('Program metadata not found');
+                    }
 
-                const safeProgramMetadata = {
-                    id: programMetadata.id || programid,
-                    trackedEntityAttributes: programMetadata.trackedEntityAttributes || [],
-                    programStages: programMetadata.programStages || []
-                };
+                    console.log("Program Metadata received:", programMetadata);
+                    console.log("Program Metadata keys:", Object.keys(programMetadata));
 
-                if (!safeProgramMetadata.trackedEntityAttributes || safeProgramMetadata.trackedEntityAttributes.length === 0) {
-                    console.warn("No trackedEntityAttributes found, using empty array");
+                    const safeProgramMetadata = {
+                        id: programMetadata.id || programid,
+                        trackedEntityAttributes: programMetadata.trackedEntityAttributes || [],
+                        programStages: programMetadata.programStages || []
+                    };
+
+                    if (!safeProgramMetadata.trackedEntityAttributes || safeProgramMetadata.trackedEntityAttributes.length === 0) {
+                        console.warn("No trackedEntityAttributes found, using empty array");
+                    }
+
+                    if (!safeProgramMetadata.programStages || safeProgramMetadata.programStages.length === 0) {
+                        console.warn("No programStages found, using empty array");
+                    }
+
+                    const { trackedEntityInstance, enrollment, events } = generateDhis2Payloadx(data, safeProgramMetadata);
+
+                    console.log("currentEventscurrentEvents" + trackedEntityInstance);
+                    console.log("enrollmentenrollment" + enrollment);
+                    console.log("eventevent" + events);
+
+                    await dataApi.pushTrackedEntityInstance(
+                        data.trackedEntityInstance,
+                        safeProgramMetadata.id
+                    );
+
+                    await dataApi.pushEnrollment(
+                        data.enrollment,
+                        safeProgramMetadata.id
+                    );
+
+                    await dataApi.pushEvents({ events: [data.event] });
+                    console.log("DHIS: Successfully processed row");
+
+                    // Add to processed data for CSV
+                    processedData.push({
+                        status: 'Success',
+                        message: 'Successfully processed',
+                        trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
+                        enrollment: data.enrollment?.enrollment || '',
+                        event: data.event?.event || '',
+                        originalRow: content[processedCount] // Keep reference to original data
+                    });
+
+                } catch (error) {
+                    console.error(`DHIS Error processing data for TEI: ${data.trackedEntityInstance}`, error);
+                    console.error("Full error details:", error);
+
+                    // Add to errored rows
+                    erroredRows.push({
+                        data: {
+                            ...data,
+                            originalRow: content[processedCount]
+                        },
+                        error: error.message,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    setDhisProcessingData(prev => ({
+                        ...prev,
+                        errorCount: prev.errorCount + 1,
+                        erroredRows: [...prev.erroredRows, {
+                            data: data,
+                            error: error.message,
+                            timestamp: new Date().toISOString()
+                        }]
+                    }));
                 }
 
-                if (!safeProgramMetadata.programStages || safeProgramMetadata.programStages.length === 0) {
-                    console.warn("No programStages found, using empty array");
-                }
-
-                const { trackedEntityInstance, enrollment, events } = generateDhis2Payloadx(data, safeProgramMetadata);
-
-                console.log("currentEventscurrentEvents" + trackedEntityInstance);
-                console.log("enrollmentenrollment" + enrollment);
-                console.log("eventevent" + events);
-
-                await dataApi.pushTrackedEntityInstance(
-                    data.trackedEntityInstance,
-                    safeProgramMetadata.id
-                );
-
-                await dataApi.pushEnrollment(
-                    data.enrollment,
-                    safeProgramMetadata.id
-                );
-
-                await dataApi.pushEvents({ events: [data.event] });
-                console.log("DHIS: Successfully processed row");
-
-                // Add to processed data for CSV
-                processedData.push({
-                    status: 'Success',
-                    message: 'Successfully processed',
-                    trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
-                    enrollment: data.enrollment?.enrollment || '',
-                    event: data.event?.event || '',
-                    originalRow: content[processedCount] // Keep reference to original data
-                });
-
-            } catch (error) {
-                console.error(`DHIS Error processing data for TEI: ${data.trackedEntityInstance}`, error);
-                console.error("Full error details:", error);
-
-                // Add to errored rows
-                erroredRows.push({
-                    data: {
-                        ...data,
-                        originalRow: content[processedCount]
-                    },
-                    error: error.message,
-                    timestamp: new Date().toISOString()
-                });
+                processedCount++;
+                setProgress(Math.round((processedCount / totalRows) * 100));
 
                 setDhisProcessingData(prev => ({
                     ...prev,
-                    errorCount: prev.errorCount + 1,
-                    erroredRows: [...prev.erroredRows, {
-                        data: data,
-                        error: error.message,
-                        timestamp: new Date().toISOString()
-                    }]
+                    processedRows: processedCount
                 }));
             }
 
-            processedCount++;
-            setProgress(Math.round((processedCount / totalRows) * 100));
+            // Generate CSV files after processing is complete
+            console.log("writeDhisCsv----", headers);
+            console.log("writeDhisCsv----", content);
 
+            // Download successful results
+            if (processedData.length > 0) {
+                writeDhisCsv(processedData, `dhis_import_results_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content, erroredRows);
+            }
+
+            // Download errors if any
+            if (erroredRows.length > 0) {
+                downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content);
+            }
+
+            // Clear file input and data
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            setDhisFileData(null);
+
+        } catch (error) {
             setDhisProcessingData(prev => ({
                 ...prev,
-                processedRows: processedCount
+                error: error.message
+            }));
+        } finally {
+            setDhisProcessingData(prev => ({
+                ...prev,
+                isProcessing: false
             }));
         }
-
-        // Generate CSV files after processing is complete
-        console.log("writeDhisCsv----", headers);
-        console.log("writeDhisCsv----", content);
-
-        // Download successful results
-        if (processedData.length > 0) {
-            writeDhisCsv(processedData, `dhis_import_results_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content, erroredRows);
-        }
-
-        // Download errors if any
-        if (erroredRows.length > 0) {
-            downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content);
-        }
-
-        // Clear file input and data
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-        setDhisFileData(null);
-
-    } catch (error) {
-        setDhisProcessingData(prev => ({
-            ...prev,
-            error: error.message
-        }));
-    } finally {
-        setDhisProcessingData(prev => ({
-            ...prev,
-            isProcessing: false
-        }));
-    }
-};
+    };
 
     const uploadProps = {
         beforeUpload: handleFileUploadToDhis,
@@ -981,23 +981,48 @@ const beginDhisCodProcessing = async () => {
         console.log("DHIS Processing table closed successfully.");
     };
 
+      const downloadFile = () => {
+    try {
+      const publicUrl = '\ICD11DorisTemplate.csv';
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = publicUrl;
+      link.download = 'ICD11DorisTemplate.csv';
+      link.target = '_blank';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);   
+    } catch (error) {     
+      alert('Download failed. Please try again.');
+    }
+  };
+
 
     return (
 
 
-        <div className= "import-module-main-div">
+        <div className="import-module-main-div">
             <h1 className="import-module-header">Mortality and Morbidity Data Import Module</h1>
 
             {/* Import General Section*/}
-            <div className="general-wrapper" style={{ }}>
+            <div className="general-wrapper" style={{}}>
                 {/* DORIS Import Section */}
-                <div className="doris-import-wrapper" style={{ }}>
+                <div className="doris-import-wrapper" style={{}}>
 
 
-                    <div className="doris-content-div" style={{  }}>
+                    <div className="doris-content-div" style={{}}>
                         <h2 style={{ fontSize: '28px' }}>DORIS ICD-11 Underlying Cause of Death </h2>
+
+                        <Button onClick={downloadFile} style={{ marginRight: 10, color: '#FFFFFF', backgroundColor: '#2c6693', borderRadius: 5 }}>Download Import Template</Button>
+                        
+                        <div style={{height: '1em'}}></div>
                         <p style={{ color: '#6E6E6E' }}>Upload a csv file containing mortality data for the generation of Underlying COD.</p>
                         <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
+
+
+
                         <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10, color: '#6E6E6E', borderRadius: 5 }}>Select COD FIle</Button>
                         {dorisFileData && !dorisProcessingData.isProcessing && (
                             <Button style={{ backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDorisCodProcessing}>Start Data Import</Button>
@@ -1017,16 +1042,16 @@ const beginDhisCodProcessing = async () => {
                             </div>
 
                             {/* Metrics and value header */}
-                            <div className="metrics-value-wrapper" style={{ }}>
+                            <div className="metrics-value-wrapper" style={{}}>
                                 <h3 className="metrics-title" style={{}}>Metrics</h3>
-                                <span className="value-title" style={{ }}>Value</span>
+                                <span className="value-title" style={{}}>Value</span>
 
                             </div>
                             <div style={{ padding: '20px' }}>
                                 {/* Total row div */}
                                 <div className="total-row-div" style={{}}>
                                     <div className="total-dotted-wrapper" style={{}}>
-                                        <div className="total-title" style={{ }}>Total Rows</div>
+                                        <div className="total-title" style={{}}>Total Rows</div>
                                         <div className="total-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.totalRows}</span>
@@ -1034,9 +1059,9 @@ const beginDhisCodProcessing = async () => {
 
                                 {/* process row div*/}
                                 <div className="process-row-div" style={{}}>
-                                    <div className="process-dotted-wrapper" style={{ }}>
-                                        <div className="process-title" style={{ }}>Processed Rows</div>
-                                        <div className="process-dotted-div" style={{  }}> </div>
+                                    <div className="process-dotted-wrapper" style={{}}>
+                                        <div className="process-title" style={{}}>Processed Rows</div>
+                                        <div className="process-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.processedRows}</span>
                                 </div>
@@ -1044,8 +1069,8 @@ const beginDhisCodProcessing = async () => {
                                 {/* error row div*/}
                                 <div className="error-row-div" style={{}}>
                                     <div className="error-dotted-wrapper" style={{}}>
-                                        <div className="error-title" style={{ }}>Errors</div>
-                                        <div className="error-dotted-div" style={{ }}> </div>
+                                        <div className="error-title" style={{}}>Errors</div>
+                                        <div className="error-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold', color: dorisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
                                         {dorisProcessingData.errorCount}
@@ -1160,45 +1185,45 @@ const beginDhisCodProcessing = async () => {
                     )}
 
                     {(dhisProcessingData.isProcessing || dhisProcessingData.hasStarted || dhisProcessingData.processedRows >= 1) && (
-                        <div className="doris-process"  style={{ border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, maxWidth: '553px', width: '100%', margin: 'auto' }}>
+                        <div className="doris-process" style={{ border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, maxWidth: '553px', width: '100%', margin: 'auto' }}>
 
                             {/* Header */}
-                            <div className="process-header"  style={{ }}>
+                            <div className="process-header" style={{}}>
                                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'normal' }}>Processing: {dhisFileData?.fileName}</h3>
                                 <span style={{ marginLeft: 'auto', fontSize: '18px' }}><img src={colorImage}></img></span>
 
                             </div>
 
                             {/* Metrics and value header */}
-                            <div className="metrics-value-wrapper" style={{ }}>
-                                <h3 className="metrics-title" style={{ }}>Metrics</h3>
-                                <span className="value-title" style={{ }}>Value</span>
+                            <div className="metrics-value-wrapper" style={{}}>
+                                <h3 className="metrics-title" style={{}}>Metrics</h3>
+                                <span className="value-title" style={{}}>Value</span>
 
                             </div>
                             <div style={{ padding: '20px' }}>
                                 {/* Total row div */}
-                                <div className="total-row-div" style={{ }}>
-                                    <div className="total-dotted-wrapper" style={{ }}>
-                                        <div className="total-title"  style={{}}>Total Rows</div>
+                                <div className="total-row-div" style={{}}>
+                                    <div className="total-dotted-wrapper" style={{}}>
+                                        <div className="total-title" style={{}}>Total Rows</div>
                                         <div className="total-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.totalRows}</span>
                                 </div>
 
                                 {/* process row div*/}
-                                <div className="process-row-div" style={{ }}>
-                                    <div className="process-dotted-wrapper" style={{ }}>
+                                <div className="process-row-div" style={{}}>
+                                    <div className="process-dotted-wrapper" style={{}}>
                                         <div className="process-title" style={{ color: '#666' }}>Processed Rows</div>
-                                        <div className="process-dotted-div" style={{ }}> </div>
+                                        <div className="process-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.processedRows}</span>
                                 </div>
 
                                 {/* error row div*/}
                                 <div className="error-row-div" style={{}}>
-                                    <div className="error-dotted-wrapper" style={{ }}>
+                                    <div className="error-dotted-wrapper" style={{}}>
                                         <div className="error-title" style={{}}>Errors</div>
-                                        <div className="error-dotted-div" style={{  }}> </div>
+                                        <div className="error-dotted-div" style={{}}> </div>
                                     </div>
                                     <span style={{ fontWeight: 'bold', color: dhisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
                                         {dhisProcessingData.errorCount}
@@ -1293,9 +1318,9 @@ const beginDhisCodProcessing = async () => {
 
 const mapStateToProps = (state) => {
     return {
-      metadata: state.metadata,
-      data: state.data,
-    icdApi_clientToken: state.metadata.icdApi_clientToken,
+        metadata: state.metadata,
+        data: state.data,
+        icdApi_clientToken: state.metadata.icdApi_clientToken,
         keyUILocale: state.metadata.keyUiLocale
 
     };

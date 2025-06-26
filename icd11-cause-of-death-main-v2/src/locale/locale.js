@@ -33,6 +33,8 @@ const resources = {
       translation: "Translation",
       dataEntry: "Data Entry",
       anacodExport: "Anacod Export",
+      importMetaData: "Import Data",
+      conversionModule: "Conversion Module",
       dashboard: "Dashboard",
       administration: "Administration",
       exitApp: "Exit App",
