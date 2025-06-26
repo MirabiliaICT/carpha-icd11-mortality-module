@@ -1170,13 +1170,15 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                         
                         {/* Upload button for DHIS2 Import Section */}
 
-                        if(selectedOrgUnit == null){
-                            
-                        }
-
-                        <Upload {...uploadProps}>
-                            <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
-                        </Upload>
+                        {selectedOrgUnit ? (
+                                <Upload {...uploadProps}>
+                                    <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
+                                </Upload>
+                        ) : (
+                            <div style={{ color: '#888', marginBottom: 10 }}>
+                                Please select an organization unit to enable file upload.
+                            </div>
+                        )}
                         {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
                         {dhisFileData && !dhisProcessingData.isProcessing && (
                             <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
