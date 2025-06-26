@@ -47,7 +47,7 @@ function ICDCodeMapper() {
   ];
 
   // Parse the mapping file (txt)
-  const handleMappingFileUpload = (event) => {
+ {/* const handleMappingFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -79,11 +79,102 @@ function ICDCodeMapper() {
 
     reader.readAsText(file);
   };
+*/}
+
+const handleMappingFileUpload = (eventOrFiles) => {
+  let file;
+
+  // Check if argument is an event (from <input>) or FileList (from drag-drop)
+  if (eventOrFiles && eventOrFiles.target && eventOrFiles.target.files) {
+    // From input event
+    file = eventOrFiles.target.files[0];
+  } else if (eventOrFiles && eventOrFiles.length) {
+    // From drag and drop FileList or array
+    file = eventOrFiles[0];
+  }
+
+  if (!file) return;
+
+  setMappingFile(file);
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      const content = e.target.result;
+      const lines = content.split("\n").filter((line) => line.trim());
+
+      // Skip header line
+      const data = lines.slice(1).map((line) => {
+        const columns = line.split("\t");
+        return {
+          icd10Code: columns[2],   // icd10Code column
+          icd11Code: columns[9],   // icd11Code column
+          icd10Title: columns[4],  // icd10Title column
+          icd11Title: columns[11], // icd11Title column
+        };
+      });
+
+      setMappingData(data);
+      setError("");
+    } catch (err) {
+      setError("Error parsing mapping file: " + err.message);
+    }
+  };
+
+  reader.readAsText(file);
+};
 
 
 
   // Parse the import file (CSV)
-  const handleImportFileUpload = (event) => {
+
+  const handleImportFileUpload = (eventOrFiles) => {
+    let file;
+
+    if (eventOrFiles && eventOrFiles.target && eventOrFiles.target.files) {
+      // Called from <input type="file" onChange=...>
+      file = eventOrFiles.target.files[0];
+    } else if (eventOrFiles && eventOrFiles.length) {
+      // Called from drag-and-drop, eventOrFiles is FileList or array
+      file = eventOrFiles[0];
+    }
+
+    if (!file) return;
+
+    setImportFile(file);
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      try {
+        const content = e.target.result;
+        const lines = content.split("\n").filter((line) => line.trim());
+
+        // Parse CSV header (assuming parseCSVLine is your CSV parsing helper)
+        const header = parseCSVLine(lines[0]);
+        setOriginalHeaders(header);
+
+        // Parse data rows
+        const data = lines.slice(1).map((line) => {
+          const values = parseCSVLine(line);
+          const record = {};
+          header.forEach((col, idx) => {
+            record[col] = values[idx] || "";
+          });
+          return record;
+        });
+
+        setImportData(data);
+        setError("");
+      } catch (err) {
+        setError("Error parsing import file: " + err.message);
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+ {/* const handleImportFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -119,7 +210,7 @@ function ICDCodeMapper() {
     };
 
     reader.readAsText(file);
-  };
+  };*/}
 
   // Better CSV parser to handle quoted values
   const parseCSVLine = (line) => {
@@ -376,12 +467,12 @@ if (
 
   const downloadFile = () => {
     try {
-      const publicUrl = 'Replace with the actual public URL of the file';
+      const publicUrl = '\ICD10to11conversionTable.txt';
 
       // Create download link
       const link = document.createElement('a');
       link.href = publicUrl;
-      link.download = 'filename.txt';
+      link.download = 'ICD10to11conversionTable.txt';
       link.target = '_blank';
 
       document.body.appendChild(link);
@@ -410,8 +501,82 @@ if (
     document.body.removeChild(link);
   };
 
+
+  function NativeDragDrop({ handleMappingFileUpload }) {
+  function handleDrop(event) {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+
+    // Filter files to only accept .txt files
+    const txtFiles = Array.from(files).filter(
+      (file) => file.type === "text/plain" || file.name.endsWith(".txt")
+    );
+
+    if (txtFiles.length === 0) {
+      alert("Only .txt files are allowed");
+      return;
+    }
+    handleMappingFileUpload(txtFiles);
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault();
+  }
+
+    return (
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        type="file"
+        accept=".txt"
+        className="drag-and-drop-files"
+      >
+        <img src="/upload.jpg" alt="upload icon" />
+        <h4 className="drag-name">Drag and drop files here</h4>
+      </div>
+    );
+  }
+
+    function NewNativeDragDrop({ handleImportFileUpload }) {
+     function handleDrop(event) {
+       event.preventDefault();
+       const files = event.dataTransfer.files;
+
+       // Filter files to only accept .csv files
+       const csvFiles = Array.from(files).filter(
+         (file) => file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv")
+       );
+
+       if (csvFiles.length === 0) {
+         alert("Only .csv files are allowed");
+         return;
+       }
+       handleImportFileUpload(csvFiles);
+     }
+
+     function handleDragOver(event) {
+       event.preventDefault();
+     }
+
+
+      return (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          type="file"
+          accept=".csv"
+          className="drag-and-drop-files"
+        >
+          <img src="/upload.jpg" alt="upload icon" />
+          <h4 className="drag-name">Drag and drop files here</h4>
+        </div>
+      );
+    }
+
+
+
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-md">
+    <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-md overall-container">
       <h1 className="header-style">
         ICD-10 to ICD-11 Code Mapper
       </h1>
@@ -425,7 +590,7 @@ if (
     {/* STEP 1 */}
     <div className="div-container">
       <div className="column-container">
-        <div className="border p-4 rounded-md flex-container">
+            <div className="rounded-md flex-container">
         <div className="steps-div">
             <p className ="steps-style">Step 1</p>
         </div>
@@ -434,16 +599,18 @@ if (
 
          <div className="file-container">
                {/* Drag and Drop Zone */}
-               <div
+      {/*         <div
                  onDrop={handleMappingFileUpload}
                  onDragOver={handleMappingFileUpload}
                  className="drag-and-drop-files"
                >
                  <img src = "/upload.jpg" alt="upload icon"/>
                  <h4 className = "drag-name">Drag and drop files here</h4>
-               </div>
+               </div>*/}
 
-               <p className="or">or</p>
+            <NativeDragDrop handleMappingFileUpload={handleMappingFileUpload} />
+
+            <p className="or">or</p>
 
         <label className="choose-files">
            Choose file
@@ -455,16 +622,16 @@ if (
            />
          </label>
           </div>
-          {mappingFile && (
-                      <p className="mt-2 text-sm text-gray-600">
-                        File: {mappingFile.name} ({mappingData.length} mappings loaded)
-                      </p>
-                    )}
           </div>
+            {mappingFile && (
+               <p className="file-name">
+               File: {mappingFile.name} ({mappingData.length} mappings loaded)
+               </p>
+            )}
         </div>
 
          {/* STEP 2*/}
-        <div className="border p-4 rounded-md flex-container">
+        <div className="rounded-md flex-container">
         <div className="steps-div">
              <p className ="steps-style">Step 2 </p>
         </div>
@@ -473,16 +640,9 @@ if (
 
             <div className="file-container">
                          {/* Drag and Drop Zone */}
-                         <div
-                           onDrop={handleMappingFileUpload}
-                           onDragOver={handleMappingFileUpload}
-                           className="drag-and-drop-files"
-                         >
-                           <img src = "/upload.jpg" alt="upload icon"/>
-                           <h4 className = "drag-name">Drag and drop files here</h4>
-                         </div>
+            <NewNativeDragDrop handleImportFileUpload={handleImportFileUpload} />
 
-                         <p className="or">or</p>
+            <p className="or">or</p>
 
            <label className="choose-files">
             Choose file
@@ -494,12 +654,12 @@ if (
           />
            </label>
         </div>
-        {importFile && (
-                    <p className="mt-2 text-sm text-gray-600">
-                      File: {importFile.name} ({importData.length} records loaded)
-                    </p>
-                  )}
         </div>
+         {importFile && (
+           <p className="file-name">
+              File: {importFile.name} ({importData.length} records loaded)
+           </p>
+         )}
         </div>
 
       </div>
@@ -535,8 +695,8 @@ if (
             </button>
           </div>
 
-          <div className="overflow-x-auto table-div">
-            <table className="min-w-full divide-y divide-gray-200 ">
+          <div className="table-div">
+            <table className="main-table">
                   <thead className="table-header tracking-wider uppercase">
                     <tr>
                       <th className="table-header tracking-wider uppercase">
@@ -557,38 +717,37 @@ if (
               <tbody className="bg-white divide-y divide-gray-200">
                 {mappedData.slice(0, 5).map((record, index) => (
                   <tr key={index}>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="table-border">
                       {record.co_seq_mortality || index + 1}
                     </td>
 
                     {icdColumns.map((column, colIndex) => (
                       <React.Fragment key={colIndex}>
                         {/* ICD-10 Code */}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="table-border">
                           {record[column] || "NIL"}
                         </td>
 
                         {/* ICD-11 Code */}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 bg-gray-50">
+                        <td className="table-border">
                           {record[`${column}_icd11`] || "NIL"}
                         </td>
                       </React.Fragment>
                     ))}
                   </tr>
                 ))}
+                 </tbody>
+               </table>
+                </div>
+
                 {mappedData.length > 5 && (
-                  <tr>
-                    <td
+                  <div
                       colSpan={1 + icdColumns.length * 2}
                       className="record-display"
                     >
                       Showing 5 of {mappedData.length} records.
-                    </td>
-                  </tr>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
         </div>
       )}
     </div>
