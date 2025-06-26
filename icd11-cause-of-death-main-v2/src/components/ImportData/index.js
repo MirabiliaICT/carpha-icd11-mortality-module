@@ -463,7 +463,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
         if (!file) return false;
 
-        // if(!selectedOrgUnit){
+        // if(selectedOrgUnit){
         //     message.info("Selected an org");
         //     return;
         // }
@@ -1167,13 +1167,22 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
                         {/* <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} /> */}
 
+                        
                         {/* Upload button for DHIS2 Import Section */}
-                        <Upload {...uploadProps}>
-                            <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
-                        </Upload>
-                        {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
-                        {dhisFileData && !dhisProcessingData.isProcessing && (
-                            <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
+
+                        {selectedOrgUnit ? (
+                            <>
+                                <Upload {...uploadProps}>
+                                    <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
+                                </Upload>
+                                {dhisFileData && !dhisProcessingData.isProcessing && (
+                                    <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
+                                )}
+                            </>
+                        ) : (
+                            <div style={{ color: '#888', marginBottom: 10 }}>
+                                Please select an organization unit to enable file upload.
+                            </div>
                         )}
 
 
