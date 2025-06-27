@@ -110,19 +110,19 @@ const handleMappingFileUpload = (eventOrFiles) => {
           icd10Code: columns[2],   // icd10Code column
           icd11Code: columns[9],   // icd11Code column
           icd10Title: columns[4],  // icd10Title column
-          icd11Title: columns[11], // icd11Title column
-        };
-      });
+            icd11Title: columns[11], // icd11Title column
+          };
+        });
 
-      setMappingData(data);
-      setError("");
-    } catch (err) {
-      setError("Error parsing mapping file: " + err.message);
-    }
+        setMappingData(data);
+        setError("");
+      } catch (err) {
+        setError("Error parsing mapping file: " + err.message);
+      }
+    };
+
+    reader.readAsText(file);
   };
-
-  reader.readAsText(file);
-};
 
 
 
@@ -587,92 +587,84 @@ if (
         </div>
       )}
 
-    {/* STEP 1 */}
-    <div className="div-container">
-      <div className="column-container">
-            <div className="rounded-md flex-container">
-        <div className="steps-div">
-            <p className ="steps-style">Step 1</p>
-        </div>
-        <div className="upload-div">
-         <h4 className="upload-styles"> Upload Mapping File (TXT)</h4>
-
-         <div className="file-container">
-               {/* Drag and Drop Zone */}
-      {/*         <div
-                 onDrop={handleMappingFileUpload}
-                 onDragOver={handleMappingFileUpload}
-                 className="drag-and-drop-files"
-               >
-                 <img src = "/upload.jpg" alt="upload icon"/>
-                 <h4 className = "drag-name">Drag and drop files here</h4>
-               </div>*/}
-
-            <NativeDragDrop handleMappingFileUpload={handleMappingFileUpload} />
-
-            <p className="or">or</p>
-
-        <label className="choose-files">
-           Choose file
-           <input
-             type="file"
-             accept=".txt"
-             onChange={handleMappingFileUpload}
-             hidden
-           />
-         </label>
-          </div>
-          </div>
-            {mappingFile && (
-               <p className="file-name">
-               File: {mappingFile.name} ({mappingData.length} mappings loaded)
-               </p>
-            )}
-        </div>
-
-         {/* STEP 2*/}
+    {/* STEP CARDS ROW */}
+    <div className="icd-mapper-row">
+      {/* Step 1 */}
+      <div className="icd-mapper-col">
+        <div className="step-label-outside">Step 1</div>
         <div className="rounded-md flex-container">
-        <div className="steps-div">
-             <p className ="steps-style">Step 2 </p>
-        </div>
-         <div className="upload-div">
-          <h4 className="upload-styles">Upload Import File (CSV) </h4>
-
+          <div className="upload-div">
+            <h4 className="upload-styles">Upload Mapping File (TXT)</h4>
+            <div className="instruction-block">
+              <div className="instruction-a">
+                <span>(a) Download file mapping template.... </span>
+                <span
+                  className="download-template-link"
+                  onClick={downloadFile}
+                  style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8 }}
+                >
+                  Download template
+                </span>
+              </div>
+              <div className="instruction-b">(b) Upload mapping file. (csv file)</div>
+            </div>
+            <div className="flex-spacer" />
             <div className="file-container">
-                         {/* Drag and Drop Zone */}
-            <NewNativeDragDrop handleImportFileUpload={handleImportFileUpload} />
-
-            <p className="or">or</p>
-
-           <label className="choose-files">
-            Choose file
-          <input
-            type="file"
-            accept=".csv"
-            onChange={handleImportFileUpload}
-            hidden
-          />
-           </label>
+              <NativeDragDrop handleMappingFileUpload={handleMappingFileUpload} />
+              <p className="or">or</p>
+              <label className="choose-files">
+                Choose file
+                <input
+                  type="file"
+                  accept=".txt"
+                  onChange={handleMappingFileUpload}
+                  hidden
+                />
+              </label>
+            </div>
+            {mappingFile && (
+              <p className="file-name">
+                File: {mappingFile.name} ({mappingData.length} mappings loaded)
+              </p>
+            )}
+          </div>
         </div>
-        </div>
-         {importFile && (
-           <p className="file-name">
-              File: {importFile.name} ({importData.length} records loaded)
-           </p>
-         )}
-        </div>
-
       </div>
+      {/* Step 2 */}
+      <div className="icd-mapper-col">
+        <div className="step-label-outside">Step 2</div>
+        <div className="rounded-md flex-container">
+          <div className="upload-div">
+            <h4 className="upload-styles">Upload Import File (CSV)</h4>
+            <div className="instruction-block">
+              <div className="instruction-csv">Files must be in CSV format</div>
+            </div>
+            <div className="flex-spacer" />
+            <div className="file-container">
+              <NewNativeDragDrop handleImportFileUpload={handleImportFileUpload} />
+              <p className="or">or</p>
+              <label className="choose-files">
+                Choose file
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleImportFileUpload}
+                  hidden
+                />
+              </label>
+            </div>
+            {importFile && (
+              <p className="file-name">
+                File: {importFile.name} ({importData.length} records loaded)
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
 
       {/* BUTTON */}
         <div className="mapping-btn-container">
-          <button            
-            onClick={downloadFile}
-            style={{ marginRight: '16px' }}
-            className="mapping-btn"
-          >
-            {"Download Mapping File Template"}
-          </button>
           <button
             onClick={processMapping}
             disabled={!mappingData.length || !importData.length || isProcessing}
@@ -680,7 +672,6 @@ if (
           >
             {isProcessing ? "Processing..." : "Map ICD-10 to ICD-11 Codes"}
           </button>
-        </div>
       </div>
 
       {mappedData.length > 0 && (
