@@ -266,8 +266,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
                 if (apiResponse.reject == true || apiResponse.reject == "TRUE") {
 
-                    // erroredRows.push(apiResponse); // Add the errored row to the list
-                    apiResponsesProcessedList.push(apiResponse);
+                    erroredRows.push(apiResponse); // Add the errored row to the list
 
                     await new Promise(resolve => setTimeout(resolve, delayInMillis));
 
@@ -311,15 +310,11 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         console.log("writeCsv----" + deathCertificates)
 
 
-const now = new Date();
-const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
-const filename = `Doris_Processed_COD_${timestamp}.csv`;
+        writeCsv(apiResponsesProcessedList, `sample${Math.random()}.csv`, headers, deathCertificates);
 
-        writeCsv(apiResponsesProcessedList, filename, headers, deathCertificates);
-
-        // if (erroredRows.length > 0) {
-        //     downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`, headers, deathCertificates);; // Automatically download errors CSV if errors exist
-        // }
+        if (erroredRows.length > 0) {
+            downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`, headers, deathCertificates);; // Automatically download errors CSV if errors exist
+        }
 
         if (fileInputRef.current) {
             fileInputRef.current.value = ''; // Clear the file input
@@ -348,13 +343,6 @@ const filename = `Doris_Processed_COD_${timestamp}.csv`;
             return `"${warning}"`; // Wrap the report in double quotes to handle commas
         };
 
-              // Escape special characters in the error field
-        const escapeError = (error) => {
-            if (!error) return '';
-            error = error.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${error}"`; // Wrap the report in double quotes to handle commas
-        };
-
         // Create CSV content
         const csvContent = [
             header.join(","), // Header row
@@ -368,7 +356,7 @@ const filename = `Doris_Processed_COD_${timestamp}.csv`;
                     response.uri,
                     escapeReport(response.report), // Escaped report field
                     response.reject,
-                    escapeError(response.error),
+                    response.error,
                     escapeWarning(response.warning)
                 ].join(","); // Join the row with commas
             })
@@ -1179,10 +1167,18 @@ const filename = `Doris_Processed_COD_${timestamp}.csv`;
 
                         {/* <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} /> */}
 
+                        
                         {/* Upload button for DHIS2 Import Section */}
-                        <Upload {...uploadProps}>
-                            <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
-                        </Upload>
+
+                        {selectedOrgUnit ? (
+                                <Upload {...uploadProps}>
+                                    <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
+                                </Upload>
+                        ) : (
+                            <div style={{ color: '#888', marginBottom: 10 }}>
+                                Please select an organization unit to enable file upload.
+                            </div>
+                        )}
                         {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
                         {dhisFileData && !dhisProcessingData.isProcessing && (
                             <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
