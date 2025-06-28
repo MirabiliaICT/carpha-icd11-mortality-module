@@ -80,6 +80,7 @@
 }
 
 .mapping-btn{
+    border : none;
     background-color: #125887;
     border-radius: 5px;
     color: #FFFFFF;

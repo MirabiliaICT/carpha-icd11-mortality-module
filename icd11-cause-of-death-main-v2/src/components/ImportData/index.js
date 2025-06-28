@@ -31,6 +31,8 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
     const { t } = useTranslation();
     const fileInputRef = useRef(null);
     const [orgUnits, setOrgUnits] = useState([]);
+     const [userDetails, setUserDetails] = useState([]);
+
     const [selectedOrgUnit, setSelectedOrgUnit] = useState('');
 
     // Separate state for DORIS section
@@ -266,7 +268,8 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
                 if (apiResponse.reject == true || apiResponse.reject == "TRUE") {
 
-                    erroredRows.push(apiResponse); // Add the errored row to the list
+                    apiResponsesProcessedList.push(apiResponse);
+
 
                     await new Promise(resolve => setTimeout(resolve, delayInMillis));
 
@@ -310,11 +313,14 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         console.log("writeCsv----" + deathCertificates)
 
 
-        writeCsv(apiResponsesProcessedList, `sample${Math.random()}.csv`, headers, deathCertificates);
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+        const filename = `Doris_Processed_COD_${timestamp}.csv`;
 
-        if (erroredRows.length > 0) {
-            downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`, headers, deathCertificates);; // Automatically download errors CSV if errors exist
-        }
+        writeCsv(apiResponsesProcessedList, filename, headers, deathCertificates);
+        // if (erroredRows.length > 0) {
+        //     downloadErrorCsv(erroredRows, `sample_Errors${Math.random()}.csv`, headers, deathCertificates);; // Automatically download errors CSV if errors exist
+        // }
 
         if (fileInputRef.current) {
             fileInputRef.current.value = ''; // Clear the file input
@@ -343,7 +349,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
             return `"${warning}"`; // Wrap the report in double quotes to handle commas
         };
 
-              // Escape special characters in the error field
+        // Escape special characters in the error field
         const escapeError = (error) => {
             if (!error) return '';
             error = error.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
@@ -351,57 +357,41 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         };
 
         // Function to transform Sex column values
-    const transformSexValue = (value) => {
-        if (value === 1 || value === '1') return 'Male';
-        if (value === 2 || value === '2') return 'Female';
-        if (value === 9 || value === '9') return 'Unknown';
-        return value; // Return original value if it doesn't match expected values
-    };
-
-        // // Create CSV content
-        // const csvContent = [
-        //     header.join(","), // Header row
-        //     ...responses.map((response, index) => {
-        //         const originalRow = originalData[index];
-        //         return [
-        //             ...originalHeadersx.map(header => originalRow[header]), // Original row values
-        //             response.stemCode,
-        //             response.stemURI,
-        //             response.code,
-        //             response.uri,
-        //             escapeReport(response.report), // Escaped report field
-        //             response.reject,
-        //             response.error,
-        //             escapeWarning(response.warning)
-        //         ].join(","); // Join the row with commas
-        //     })
-        // ].join("\n"); // Join all rows with newlines
+        const transformSexValue = (value) => {
+            if (value === 1 || value === '1') {
+                return 'Male';
+            } else if (value === 2 || value === '2') {
+                return 'Female';
+            } else {
+                return 'Unknown';
+            }
+        };
 
         // Create CSV content
-    const csvContent = [
-        header.join(","), // Header row
-        ...responses.map((response, index) => {
-            const originalRow = originalData[index];
-            return [
-                ...originalHeadersx.map(header => {
-                    const value = originalRow[header];
-                    // Check if this is the Sex column and transform the value
-                    if (header.trim().toLowerCase() === 'sex') {
-                        return transformSexValue(value);
-                    }
-                    return value;
-                }), // Original row values with Sex transformation
-                response.stemCode,
-                response.stemURI,
-                response.code,
-                response.uri,
-                escapeReport(response.report), // Escaped report field
-                response.reject,
-                escapeError(response.error),
-                escapeWarning(response.warning)
-            ].join(","); // Join the row with commas
-        })
-    ].join("\n"); // Join all rows with newlines
+        const csvContent = [
+            header.join(","), // Header row
+            ...responses.map((response, index) => {
+                const originalRow = originalData[index];
+                return [
+                    ...originalHeadersx.map(header => {
+                        const value = originalRow[header];
+                        // Check if this is the Sex column and transform the value
+                        if (header.trim().toLowerCase() === 'sex') {
+                            return transformSexValue(value);
+                        }
+                        return value;
+                    }), // Original row values with Sex transformation
+                    response.stemCode,
+                    response.stemURI,
+                    response.code,
+                    response.uri,
+                    escapeReport(response.report), // Escaped report field
+                    response.reject,
+                    escapeError(response.error),
+                    escapeWarning(response.warning)
+                ].join(","); // Join the row with commas
+            })
+        ].join("\n"); // Join all rows with newlines
 
 
         // Create and download the CSV file
@@ -476,6 +466,18 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
     }
 
+        const fetctUserDetails = async () => {
+        try {
+            const userDetails = await metadataApi.getUsersFullDetails();
+            console.error('ExpecteduserDetailsy' + userDetails);
+            console.error('Expected an arrayxxxxuserDetails' + userDetails.id);
+            return userDetails;
+        } catch (error) {
+            console.error('Expected an array but got:vvvvvvvvvvvvvvvvvvvvvvvvv');
+        }
+
+    }
+
     useEffect(() => {
         const loadOrgUnits = async () => {
             const units = await fetctOrgUnits();
@@ -490,7 +492,24 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
             }
         };
 
+               const loadUserDetails = async () => {
+            const userDetail = await fetctUserDetails();
+            console.log('API Response--userDetail:', userDetail.id); // Log the response
+
+            console.log('API ResponseuserDetail:', userDetail.surname); // Log the response
+                        console.log('API ResponseuserDetail:', userDetail.firstName); // Log the response
+
+
+            if (Array.isArray(userDetail)) {
+                setUserDetails(userDetail);
+            } else {
+                console.error('Expected an array but got:', userDetail);
+            }
+        };
+
         loadOrgUnits();
+
+        loadUserDetails();
     }, []);
 
     const handleOrgUnitChange = (event) => {
@@ -576,7 +595,6 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
                             // Build the payload structure for each row
                             const trackID = generateCode();
-                            const trackentitytype = generateCode();
                             const enrollmentID = generateCode();
                             const programid = "ogrOUKoSaWA";
                             const programStageId = "WlWJt4lVSWw";
@@ -603,16 +621,16 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                     incidentDate: new Date().toISOString().split('T')[0],
                                     status: "COMPLETED",
                                     lastUpdatedByUserInfo: {
-                                        uid: "M5zQapPyTZI",
-                                        firstName: "admin",
-                                        surname: "admin",
-                                        username: "admin"
+                                        uid: userDetails.id,
+                                        firstName: userDetails.firstName,
+                                        surname: userDetails.surname,
+                                        username: userDetails.username
                                     },
                                     createdByUserInfo: {
-                                        uid: "M5zQapPyTZI",
-                                        firstName: "admin",
-                                        surname: "admin",
-                                        username: "admin"
+                                         uid: userDetails.id,
+                                        firstName: userDetails.firstName,
+                                        surname: userDetails.surname,
+                                        username: userDetails.username
                                     },
                                     notes: [
                                     ],
@@ -638,16 +656,16 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                     featureType: "NONE",
 
                                     lastUpdatedByUserInfo: {
-                                        uid: "xE7jOejl9FI",
-                                        firstName: "John",
-                                        surname: "Traore",
-                                        username: "admin"
+                                        uid: userDetails.id,
+                                        firstName: userDetails.firstName,
+                                        surname: userDetails.surname,
+                                        username: userDetails.username
                                     },
                                     createdByUserInfo: {
-                                        uid: "xE7jOejl9FI",
-                                        firstName: "John",
-                                        surname: "Traore",
-                                        username: "admin"
+                                       uid: userDetails.id,
+                                        firstName: userDetails.firstName,
+                                        surname: userDetails.surname,
+                                        username: userDetails.username
                                     },
 
                                     programOwners: [
@@ -1023,23 +1041,23 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         console.log("DHIS Processing table closed successfully.");
     };
 
-      const downloadFile = () => {
-    try {
-      const publicUrl = '\ICD11DorisTemplate.csv';
+    const downloadFile = () => {
+        try {
+            const publicUrl = '\ICD11DorisTemplate.csv';
 
-      // Create download link
-      const link = document.createElement('a');
-      link.href = publicUrl;
-      link.download = 'ICD11DorisTemplate.csv';
-      link.target = '_blank';
+            // Create download link
+            const link = document.createElement('a');
+            link.href = publicUrl;
+            link.download = 'ICD11DorisTemplate.csv';
+            link.target = '_blank';
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);   
-    } catch (error) {     
-      alert('Download failed. Please try again.');
-    }
-  };
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            alert('Download failed. Please try again.');
+        }
+    };
 
 
     return (
@@ -1055,12 +1073,16 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
 
                     <div className="doris-content-div" style={{}}>
-                        <h2 style={{ fontSize: '28px' }}>DORIS ICD-11 Underlying Cause of Death </h2>
+                        <h2 style={{ fontSize: '28px' }}>DORIS ICD-11 Tool </h2>
 
-                        <Button onClick={downloadFile} style={{ marginRight: 10, color: '#FFFFFF', backgroundColor: '#2c6693', borderRadius: 5 }}>Download Import Template</Button>
-                        
-                        <div style={{height: '1em'}}></div>
-                        <p style={{ color: '#6E6E6E' }}>Upload a csv file containing mortality data for the generation of Underlying COD.</p>
+                        <p style={{ color: '#6E6E6E' }}>(a). Download template to generate the Underlying COD.
+
+                            <a onClick={downloadFile} style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8, fontWeight: 500 }}>Download Import Template</a>
+
+                        </p>
+
+
+                        <p style={{ color: '#6E6E6E' }}>(b). Upload a csv file containing mortality data to generate the Underlying COD.</p>
                         <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
 
 
@@ -1129,12 +1151,13 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                             height: '8px',
                                             backgroundColor: '#f0f0f0',
                                             borderRadius: '4px',
+                                            // border : '1px solid #0cb079',
                                             overflow: 'hidden'
                                         }}>
                                             <div style={{
                                                 width: `${dorisProcessingData.totalRows > 0 ? (dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100 : 0}%`,
                                                 height: '100%',
-                                                backgroundColor: '#52c41a',
+                                                backgroundColor: '#0cb079',
                                                 transition: 'width 0.3s ease'
                                             }}></div>
                                         </span>
@@ -1151,7 +1174,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                             </div>
                             {dorisProcessingData.processedRows >= dorisProcessingData.totalRows && (
                                 <>
-                                    <div style={{ paddingLeft: 20, color: 'green' }}>Processing complete!</div>
+                                    <div style={{ paddingLeft: 20, color: '#0cb079' }}>Processing complete!</div>
 
                                     {dorisProcessingData.errorCount > 0 && (
                                         <div style={{ padding: '10px 20px', color: 'red' }}>
@@ -1171,12 +1194,6 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                             </Button>
                         </div>
                     )}
-
-                    {/* Error Message */}
-                    {/* {dhisProcessingData.error && (
-                    <div style={{ color: 'red', marginBottom: 10 }}>Error: {dorisProcessingData.error}</div>
-                )} */}
-
                 </div>
 
 
@@ -1196,7 +1213,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                 id="orgUnitDropdown"
                                 value={selectedOrgUnit}
                                 onChange={handleOrgUnitChange}
-                                style={{ width: '50%', padding: 10, borderRadius: 5, color: '#6E6E6E', backgroundColor: '#F8F8F8' }}
+                                style={{ width: '100%', padding: 10, borderRadius: 5, color: '#6E6E6E', backgroundColor: '#F8F8F8' }}
                             >
                                 <option value="">Select an organization unit</option>
                                 {orgUnits.map(unit => (
@@ -1207,15 +1224,12 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                             </select>
                         </div>
 
-                        {/* <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} /> */}
-
-                        
                         {/* Upload button for DHIS2 Import Section */}
 
                         {selectedOrgUnit ? (
-                                <Upload {...uploadProps}>
-                                    <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
-                                </Upload>
+                            <Upload {...uploadProps}>
+                                <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
+                            </Upload>
                         ) : (
                             <div style={{ color: '#888', marginBottom: 10 }}>
                                 Please select an organization unit to enable file upload.
@@ -1288,7 +1302,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                         <span style={{
                                             width: '70%',
                                             height: '8px',
-                                            backgroundColor: '#f0f0f0',
+                                            backgroundColor: '#0cb079',
                                             borderRadius: '4px',
                                             overflow: 'hidden'
                                         }}>
@@ -1334,31 +1348,6 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                     )}
                 </div>
             </div>
-
-            {/* Save Button */}
-            {/* <div style={{ textAlign: 'center', marginTop: 20 }}>
-                <Button
-                    type="primary"
-                    style={{ width: '110px' }}
-                    loading={loading}
-                    onClick={async () => {
-                        if (!dhisFileData || !dhisFileData.content) {
-                            message.error("No file data to save!");
-                            return;
-                        }
-                        setLoading(true);
-                        const { currentEvents } = generateDhis2Payload(dhisFileData, dhisProcessingData);
-                        await dataApi.pushEvents({ events: currentEvents });
-                        mutateEvent(currentEvents[0].event, "isDirty", false);
-                        setLoading(false);
-                        message.success("Saved Successfully!");
-                    }}
-                >
-                    Save
-                </Button>
-            </div> */}
-
-
         </div>
 
 
