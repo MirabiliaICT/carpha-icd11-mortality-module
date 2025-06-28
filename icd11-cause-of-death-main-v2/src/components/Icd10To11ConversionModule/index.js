@@ -260,6 +260,8 @@ const handleMappingFileUpload = (eventOrFiles) => {
           if (!icd10Code || icd10Code === "NULL" || icd10Code === "NUL" || icd10Code === "NIL") {
             mappedRecord[`${column}_icd11`] = "";
             mappedRecord[`${column}_icd11_title`] = "";
+            mappedRecord[`${column}_icd11_chapter`] = "";
+          
           } else {
             let mapping = icd10ToIcd11Map[icd10Code];
 
@@ -280,12 +282,12 @@ const handleMappingFileUpload = (eventOrFiles) => {
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
               mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : ''; ;
-              mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : ''; ;
+            mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
 
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
               mappedRecord[`${column}_icd11_title`] = "Not Found";
-              mappedRecord[`${column}_icd11_chapter`] = "Not Found";
+              mappedRecord[`icd11_chapter`] = "Not Found";
             }
           }
         });
@@ -378,7 +380,7 @@ if (
           columnIndex + 1,
           0,
           `${column}_icd11`,
-          `${column}_icd11_title`
+          `${column}_icd11_title`,
           `${column}_icd11_chapter`
         );
       }
