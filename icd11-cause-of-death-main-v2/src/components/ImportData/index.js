@@ -327,7 +327,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
     const writeCsv = (responses, filePath, originalHeadersx, originalData) => {
         // Combine the original headers with the report headers
-        const header = [...originalHeadersx, "stemCode", "stemURI", "code", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
+        const header = [...originalHeadersx, "stemCode", "stemURI", "code", "uri", "report", "reject", "error", "warning", "system_id"].map(header => header.trim());
 
         // Escape special characters in the report field
         const escapeReport = (report) => {
@@ -352,57 +352,41 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
         // Function to transform Sex column values
     const transformSexValue = (value) => {
-        if (value === 1 || value === '1') return 'Male';
-        if (value === 2 || value === '2') return 'Female';
-        if (value === 9 || value === '9') return 'Unknown';
-        return value; // Return original value if it doesn't match expected values
+        if (value === 1 || value === '1') {return 'Male';}
+        else if (value === 2 || value === '2') {return 'Female';}
+        else {return 'Unknown';}
     };
 
-        // // Create CSV content
-        // const csvContent = [
-        //     header.join(","), // Header row
-        //     ...responses.map((response, index) => {
-        //         const originalRow = originalData[index];
-        //         return [
-        //             ...originalHeadersx.map(header => originalRow[header]), // Original row values
-        //             response.stemCode,
-        //             response.stemURI,
-        //             response.code,
-        //             response.uri,
-        //             escapeReport(response.report), // Escaped report field
-        //             response.reject,
-        //             response.error,
-        //             escapeWarning(response.warning)
-        //         ].join(","); // Join the row with commas
-        //     })
-        // ].join("\n"); // Join all rows with newlines
-
-        // Create CSV content
     const csvContent = [
-        header.join(","), // Header row
-        ...responses.map((response, index) => {
-            const originalRow = originalData[index];
-            return [
-                ...originalHeadersx.map(header => {
-                    const value = originalRow[header];
-                    // Check if this is the Sex column and transform the value
-                    if (header.trim().toLowerCase() === 'sex') {
-                        return transformSexValue(value);
-                    }
-                    return value;
-                }), // Original row values with Sex transformation
-                response.stemCode,
-                response.stemURI,
-                response.code,
-                response.uri,
-                escapeReport(response.report), // Escaped report field
-                response.reject,
-                escapeError(response.error),
-                escapeWarning(response.warning)
-            ].join(","); // Join the row with commas
-        })
-    ].join("\n"); // Join all rows with newlines
-
+    header.join(","), // Header row
+    ...responses.map((response, index) => {
+        const originalRow = originalData[index];
+        const transformedRow = originalHeadersx.map(header => {
+            const value = originalRow[header];
+            // Check if this is the Sex column and transform the value
+            if (header.trim().toLowerCase() === 'sex') {
+                return transformSexValue(value);
+            }
+            return value;
+        });
+        
+        // Get the first column value for system_id
+        const firstColumnValue = transformedRow[0];
+        
+        return [
+            ...transformedRow, // Original row values with Sex transformation
+            response.stemCode,
+            response.stemURI,
+            response.code,
+            response.uri,
+            escapeReport(response.report), // Escaped report field
+            response.reject,
+            escapeError(response.error),
+            escapeWarning(response.warning),
+            firstColumnValue // Add first column value as system_id
+        ].join(","); // Join the row with commas
+    })
+].join("\n");
 
         // Create and download the CSV file
         const blob = new Blob([csvContent], { type: 'text/csv' });
