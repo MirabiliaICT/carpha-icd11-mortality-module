@@ -201,6 +201,18 @@ export default class MetadataApiClass extends BaseApiClass {
     );
   }
 
+ async getUsersFullDetails() {
+    return pull(
+      this.baseUrl,
+      this.username,
+      this.password,
+      "/api/me",
+      {
+        paging: false
+      }
+    );
+  }
+
   async getProgramMetadata(program) {
     const p = await pull(
       this.baseUrl,

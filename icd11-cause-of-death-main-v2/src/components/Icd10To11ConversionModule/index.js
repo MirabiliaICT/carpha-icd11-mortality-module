@@ -1,29 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
 import "./index.css";
-
-import { useTranslation } from "react-i18next";
-import moment from "moment";
-import { Button, Table, message, Upload, Progress } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-
-import {
-  generateDhis2Payload,
-  generateDhis2Payloadx,
-  generateBulkDhis2Payload,
-} from "../../utils";
 import { Hooks } from "tracker-capture-app-core";
-import { generateCode } from "../../utils";
-
-import { getToken } from "../../utils/icd11";
-
-// import { UploadOutlined } from '@ant-design/icons';
-import {
-  mutateTei,
-  mutateAttribute,
-  mutateEnrollment,
-  mutateEvent,
-} from "../../redux/actions/data";
 
 const { useApi } = Hooks;
 
@@ -110,7 +88,8 @@ const handleMappingFileUpload = (eventOrFiles) => {
           icd10Code: columns[2],   // icd10Code column
           icd11Code: columns[9],   // icd11Code column
           icd10Title: columns[4],  // icd10Title column
-            icd11Title: columns[11], // icd11Title column
+          icd11Title: columns[11], // icd11Title column
+          icd11Chapter: columns[10],   // icd11Code column
           };
         });
 
@@ -264,6 +243,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
             icd11Code: item.icd11Code,
             icd10Title: item.icd10Title,
             icd11Title: item.icd11Title,
+            icd11Chapter: item.icd11Chapter,
           };
         }
       });
@@ -277,9 +257,11 @@ const handleMappingFileUpload = (eventOrFiles) => {
           const icd10Code = record[column];
 
           // 4 handling null/NULL/NUL values
-          if (!icd10Code || icd10Code === "NULL" || icd10Code === "NUL") {
-            mappedRecord[`${column}_icd11`] = "NIL";
-            mappedRecord[`${column}_icd11_title`] = "NIL";
+          if (!icd10Code || icd10Code === "NULL" || icd10Code === "NUL" || icd10Code === "NIL") {
+            mappedRecord[`${column}_icd11`] = "";
+            mappedRecord[`${column}_icd11_title`] = "";
+            mappedRecord[`${column}_icd11_chapter`] = "";
+          
           } else {
             let mapping = icd10ToIcd11Map[icd10Code];
 
@@ -300,9 +282,12 @@ const handleMappingFileUpload = (eventOrFiles) => {
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
               mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : ''; ;
+            mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
+
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
               mappedRecord[`${column}_icd11_title`] = "Not Found";
+              mappedRecord[`icd11_chapter`] = "Not Found";
             }
           }
         });
@@ -329,11 +314,11 @@ const handleMappingFileUpload = (eventOrFiles) => {
           ? "TRUE"
           : "";
 
-
           //Very Optional but we need date of birth
           const deathYearRaw = record["nu_death_year"];
           const deathMonthRaw = record["nu_death_month"] ? record["nu_death_month"] : "01";
           const deathDayRaw = record["nu_death_day"] ? record["nu_death_day"] : "01";
+
 
           const birthYearRaw = record["nu_birth_year"];
           const birthMonthRaw = record["nu_birth_month"] ? record["nu_birth_month"] : "01";
@@ -401,7 +386,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
         const deathMonthDOD = mappedRecord["nu_death_month"] ? String(mappedRecord["nu_death_month"]).padStart(2, "0") : "";
         const deathDayDOD = mappedRecord["nu_death_day"] ? String(mappedRecord["nu_death_day"]).padStart(2, "0") : "";
         mappedRecord["date_of_death"] = deathYearDOD && deathMonthDOD && deathDayDOD ? `${deathYearDOD}/${deathMonthDOD}/${deathDayDOD}` : "";
-
+        
         return mappedRecord;
       });
 
@@ -446,7 +431,8 @@ const handleMappingFileUpload = (eventOrFiles) => {
           columnIndex + 1,
           0,
           `${column}_icd11`,
-          `${column}_icd11_title`
+          `${column}_icd11_title`,
+          `${column}_icd11_chapter`
         );
       }
     });
@@ -654,16 +640,16 @@ const handleMappingFileUpload = (eventOrFiles) => {
             <h4 className="upload-styles">Upload Mapping File (TXT)</h4>
             <div className="instruction-block">
               <div className="instruction-a">
-                <span>(a) Download file mapping template.... </span>
+                <span>(a) Download ICD-10 to 11 Conversion Table. </span>
                 <span
                   className="download-template-link"
                   onClick={downloadFile}
                   style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8 }}
                 >
-                  Download template
+                  Click to Download
                 </span>
               </div>
-              <div className="instruction-b">(b) Upload mapping file. (csv file)</div>
+              <div className="instruction-b">(b) Upload mapping file. (.txt file)</div>
             </div>
             <div className="flex-spacer" />
             <div className="file-container">
@@ -773,12 +759,12 @@ const handleMappingFileUpload = (eventOrFiles) => {
                       <React.Fragment key={colIndex}>
                         {/* ICD-10 Code */}
                         <td className="table-border">
-                          {record[column] || "NIL"}
+                          {record[column] || ""}
                         </td>
 
                         {/* ICD-11 Code */}
                         <td className="table-border">
-                          {record[`${column}_icd11`] || "NIL"}
+                          {record[`${column}_icd11`] || ""}
                         </td>
                       </React.Fragment>
                     ))}
