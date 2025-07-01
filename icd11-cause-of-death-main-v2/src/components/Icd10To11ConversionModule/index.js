@@ -345,9 +345,9 @@ if (
   mappedRecord["age_unit"] = getAgeUnit(timeUnit);
 
 
-      const sex = record["ds_sex_en"]?.toString()?.toUpperCase();
+      const sex = record["ds_sex_en"]?.toString();
 
-        mappedRecord["sex"] = mappedRecord["ds_sex_en"]?.toString()?.toUpperCase();
+        mappedRecord["sex"] = getSex(sex);
       
 
 
@@ -394,12 +394,12 @@ function getAgeUnit(timeUnit) {
   return unitMap[timeUnit] || "";
 }
 
-function getAgeUnit(timeUnit) {
+function getSex(timeUnit) {
   if (!timeUnit) return "";
   
-  const unitMap = timeUnit.
+  const unitMap = timeUnit.toUpperCase();
   
-  return unitMap[timeUnit] || "";
+  return unitMap;
 }
 
   // Generate CSV content for download with proper column ordering
