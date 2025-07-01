@@ -314,28 +314,79 @@ const handleMappingFileUpload = (eventOrFiles) => {
           ? "TRUE"
           : "";
 
+          //Very Optional but we need date of birth
+          const deathYearRaw = record["nu_death_year"];
+          const deathMonthRaw = record["nu_death_month"] ? record["nu_death_month"] : "01";
+          const deathDayRaw = record["nu_death_day"] ? record["nu_death_day"] : "01";
 
-          //Very Optional but we need date of birth 
 
-const deathYearRaw = record["nu_death_year"];
-const ageRaw = record["nu_age"];
+          const birthYearRaw = record["nu_birth_year"];
+          const birthMonthRaw = record["nu_birth_month"] ? record["nu_birth_month"] : "01";
+          const birthDayRaw = record["nu_birth_day"] ? record["nu_birth_day"] : "01";
 
-const deathYear = parseInt(deathYearRaw, 10);
-const age = parseInt(ageRaw, 10);
+          const ageRaw = record["nu_age"];
 
-if (
-  !isNaN(deathYear) &&
-  !isNaN(age) &&
-  deathYearRaw !== "" &&
-  ageRaw !== "" &&
-  deathYearRaw !== null &&
-  ageRaw !== null
-) {
-  const birthYear = deathYear - age;
-  mappedRecord["dob"] = `${birthYear}-01-01`;
-} else {
-  mappedRecord["dob"] = "";
-}
+          const deathYear = parseInt(deathYearRaw, 10);
+          const deathMonth = parseInt(deathMonthRaw, 10);
+          const deathDay = parseInt(deathDayRaw, 10);
+
+          const birthYears = parseInt(birthYearRaw, 10);
+          const birthMonth = parseInt(birthMonthRaw, 10);
+          const birthDay = parseInt(birthDayRaw, 10);
+
+          const age = parseInt(ageRaw, 10);
+
+
+        if (
+          !isNaN(deathYear) &&
+          !isNaN(age) &&
+          deathYearRaw !== "" &&
+          ageRaw !== "" &&
+          deathYearRaw !== null &&
+          ageRaw !== null
+        ) {
+
+          const birthYear = deathYear - age;      
+          mappedRecord["dob"] = `${birthYear}-${String(deathMonth).padStart(2, "0")}-${String(deathDay).padStart(2, "0")}`;
+
+          mappedRecord["nu_death_day"] = String(deathDay).padStart(2, "0");
+          mappedRecord["nu_death_month"] = String(deathMonth).padStart(2, "0");
+
+          mappedRecord["nu_birth_year"] = birthYear;
+          mappedRecord["nu_birth_month"] = String(birthMonth).padStart(2, "0");
+          mappedRecord["nu_birth_day"] = String(birthDay).padStart(2, "0");
+                   
+
+        } else if (
+          !isNaN(birthYears) &&
+          !isNaN(age) &&
+          birthYearRaw !== "" &&
+          ageRaw !== "" &&
+          birthYearRaw !== null &&
+          ageRaw !== null
+        ) {
+
+          const birthYear = birthYears + age;
+          mappedRecord["dob"] = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+
+          mappedRecord["nu_birth_year"] = birthYear;
+          mappedRecord["nu_birth_month"] = String(birthMonth).padStart(2, "0");
+          mappedRecord["nu_birth_day"] = String(birthDay).padStart(2, "0");
+
+        } else {
+          mappedRecord["dob"] = "";
+        }
+
+        const birthYearDOB = mappedRecord["nu_birth_year"] ? String(mappedRecord["nu_birth_year"]) : "";
+        const birthMonthDOB = mappedRecord["nu_birth_month"] ? String(mappedRecord["nu_birth_month"]).padStart(2, "0") : "";
+        const birthDayDOB = mappedRecord["nu_birth_day"] ? String(mappedRecord["nu_birth_day"]).padStart(2, "0") : "";
+        mappedRecord["date_of_birth"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}/${birthMonthDOB}/${birthDayDOB}` : "";
+
+        const deathYearDOD = mappedRecord["nu_death_year"] ? String(mappedRecord["nu_death_year"]) : "";
+        const deathMonthDOD = mappedRecord["nu_death_month"] ? String(mappedRecord["nu_death_month"]).padStart(2, "0") : "";
+        const deathDayDOD = mappedRecord["nu_death_day"] ? String(mappedRecord["nu_death_day"]).padStart(2, "0") : "";
+        mappedRecord["date_of_death"] = deathYearDOD && deathMonthDOD && deathDayDOD ? `${deathYearDOD}/${deathMonthDOD}/${deathDayDOD}` : "";
+        
         return mappedRecord;
       });
 
@@ -403,6 +454,14 @@ if (
     "co_original_identification": "system_id", // copy the value to a new column
     // Add more if needed: "old_header": "new_header"
   };
+  
+    if (!newHeaders.includes('date_of_birth')) {
+      newHeaders.push('date_of_birth');
+    }
+
+    if (!newHeaders.includes('date_of_death')) {
+      newHeaders.push('date_of_death');
+    }
 
   Object.values(headerTransforms).forEach((newHeader) => {
     if (!newHeaders.includes(newHeader)) {
