@@ -25,7 +25,7 @@ function ICDCodeMapper() {
   ];
 
   // Parse the mapping file (txt)
- {/* const handleMappingFileUpload = (event) => {
+  {/* const handleMappingFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -59,37 +59,37 @@ function ICDCodeMapper() {
   };
 */}
 
-const handleMappingFileUpload = (eventOrFiles) => {
-  let file;
+  const handleMappingFileUpload = (eventOrFiles) => {
+    let file;
 
-  // Check if argument is an event (from <input>) or FileList (from drag-drop)
-  if (eventOrFiles && eventOrFiles.target && eventOrFiles.target.files) {
-    // From input event
-    file = eventOrFiles.target.files[0];
-  } else if (eventOrFiles && eventOrFiles.length) {
-    // From drag and drop FileList or array
-    file = eventOrFiles[0];
-  }
+    // Check if argument is an event (from <input>) or FileList (from drag-drop)
+    if (eventOrFiles && eventOrFiles.target && eventOrFiles.target.files) {
+      // From input event
+      file = eventOrFiles.target.files[0];
+    } else if (eventOrFiles && eventOrFiles.length) {
+      // From drag and drop FileList or array
+      file = eventOrFiles[0];
+    }
 
-  if (!file) return;
+    if (!file) return;
 
-  setMappingFile(file);
-  const reader = new FileReader();
+    setMappingFile(file);
+    const reader = new FileReader();
 
-  reader.onload = (e) => {
-    try {
-      const content = e.target.result;
-      const lines = content.split("\n").filter((line) => line.trim());
+    reader.onload = (e) => {
+      try {
+        const content = e.target.result;
+        const lines = content.split("\n").filter((line) => line.trim());
 
-      // Skip header line
-      const data = lines.slice(1).map((line) => {
-        const columns = line.split("\t");
-        return {
-          icd10Code: columns[2],   // icd10Code column
-          icd11Code: columns[9],   // icd11Code column
-          icd10Title: columns[4],  // icd10Title column
-          icd11Title: columns[11], // icd11Title column
-          icd11Chapter: columns[10],   // icd11Code column
+        // Skip header line
+        const data = lines.slice(1).map((line) => {
+          const columns = line.split("\t");
+          return {
+            icd10Code: columns[2],   // icd10Code column
+            icd11Code: columns[9],   // icd11Code column
+            icd10Title: columns[4],  // icd10Title column
+            icd11Title: columns[11], // icd11Title column
+            icd11Chapter: columns[10],   // icd11Code column
           };
         });
 
@@ -153,7 +153,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
     reader.readAsText(file);
   };
 
- {/* const handleImportFileUpload = (event) => {
+  {/* const handleImportFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -225,7 +225,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
   };
 
   // Map ICD-10 codes to ICD-11 codes
- 
+
   const processMapping = () => {
     if (!mappingData.length || !importData.length) {
       setError("Please upload both mapping and import files first");
@@ -261,7 +261,7 @@ const handleMappingFileUpload = (eventOrFiles) => {
             mappedRecord[`${column}_icd11`] = "";
             mappedRecord[`${column}_icd11_title`] = "";
             mappedRecord[`${column}_icd11_chapter`] = "";
-          
+
           } else {
             let mapping = icd10ToIcd11Map[icd10Code];
 
@@ -281,8 +281,8 @@ const handleMappingFileUpload = (eventOrFiles) => {
 
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
-              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : ''; ;
-            mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
+              mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : '';;
+              mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
 
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
@@ -292,64 +292,113 @@ const handleMappingFileUpload = (eventOrFiles) => {
           }
         });
 
-      //cod*_underlying logic here
-      const underlying = mappedRecord["co_underlying_cause_icd11"] || "";
+        //cod*_underlying logic here
+        const underlying = mappedRecord["co_underlying_cause_icd11"] || "";
 
-      mappedRecord["codA_underlying"] = underlying && underlying === mappedRecord["co_associated_cause_a_icd11"]
+        mappedRecord["codA_underlying"] = underlying && underlying === mappedRecord["co_associated_cause_a_icd11"]
           ? "TRUE"
           : "";
 
-      mappedRecord["codB_underlying"] =
-        underlying && underlying === mappedRecord["co_associated_cause_b_icd11"]
-          ? "TRUE"
-          : "";
+        mappedRecord["codB_underlying"] =
+          underlying && underlying === mappedRecord["co_associated_cause_b_icd11"]
+            ? "TRUE"
+            : "";
 
-      mappedRecord["codC_underlying"] =
-        underlying && underlying === mappedRecord["co_associated_cause_c_icd11"]
-          ? "TRUE"
-          : "";
+        mappedRecord["codC_underlying"] =
+          underlying && underlying === mappedRecord["co_associated_cause_c_icd11"]
+            ? "TRUE"
+            : "";
 
-      mappedRecord["codD_underlying"] =
-        underlying && underlying === mappedRecord["co_associated_cause_d_icd11"]
-          ? "TRUE"
-          : "";
+        mappedRecord["codD_underlying"] =
+          underlying && underlying === mappedRecord["co_associated_cause_d_icd11"]
+            ? "TRUE"
+            : "";
 
-
-          //Very Optional but we need date of birth 
-
-const deathYearRaw = record["nu_death_year"];
-const ageRaw = record["nu_age"];
-
-const deathYear = parseInt(deathYearRaw, 10);
-const age = parseInt(ageRaw, 10);
-
-if (
-  !isNaN(deathYear) &&
-  !isNaN(age) &&
-  deathYearRaw !== "" &&
-  ageRaw !== "" &&
-  deathYearRaw !== null &&
-  ageRaw !== null
-) {
-  const birthYear = deathYear - age;
-  mappedRecord["dob"] = `${birthYear}-01-01`;
-} else {
-  mappedRecord["dob"] = "";
-}
-
- mappedRecord["age"] = record["nu_age"] || "";
-  mappedRecord["estimated_age"] = record["nu_age"] || "";
-    mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
-
-    const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
-  mappedRecord["age_unit"] = getAgeUnit(timeUnit);
+        //Very Optional but we need date of birth
+        const deathYearRaw = record["nu_death_year"];
+        const deathMonthRaw = record["nu_death_month"] ? record["nu_death_month"] : "01";
+        const deathDayRaw = record["nu_death_day"] ? record["nu_death_day"] : "01";
 
 
-      const sex = record["ds_sex_en"]?.toString();
+        const birthYearRaw = record["nu_birth_year"];
+        const birthMonthRaw = record["nu_birth_month"] ? record["nu_birth_month"] : "01";
+        const birthDayRaw = record["nu_birth_day"] ? record["nu_birth_day"] : "01";
+
+        const ageRaw = record["nu_age"];
+
+        const deathYear = parseInt(deathYearRaw, 10);
+        const deathMonth = parseInt(deathMonthRaw, 10);
+        const deathDay = parseInt(deathDayRaw, 10);
+
+        const birthYears = parseInt(birthYearRaw, 10);
+        const birthMonth = parseInt(birthMonthRaw, 10);
+        const birthDay = parseInt(birthDayRaw, 10);
+
+        const age = parseInt(ageRaw, 10);
+
+
+        if (
+          !isNaN(deathYear) &&
+          !isNaN(age) &&
+          deathYearRaw !== "" &&
+          ageRaw !== "" &&
+          deathYearRaw !== null &&
+          ageRaw !== null
+        ) {
+
+          const birthYear = deathYear - age;
+          mappedRecord["dob"] = `${birthYear}-${String(deathMonth).padStart(2, "0")}-${String(deathDay).padStart(2, "0")}`;
+
+          mappedRecord["nu_death_day"] = String(deathDay).padStart(2, "0");
+          mappedRecord["nu_death_month"] = String(deathMonth).padStart(2, "0");
+
+          mappedRecord["nu_birth_year"] = birthYear;
+          mappedRecord["nu_birth_month"] = String(birthMonth).padStart(2, "0");
+          mappedRecord["nu_birth_day"] = String(birthDay).padStart(2, "0");
+
+
+        } else if (
+          !isNaN(birthYears) &&
+          !isNaN(age) &&
+          birthYearRaw !== "" &&
+          ageRaw !== "" &&
+          birthYearRaw !== null &&
+          ageRaw !== null
+        ) {
+
+          const birthYear = birthYears + age;
+          mappedRecord["dob"] = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
+
+          mappedRecord["nu_birth_year"] = birthYear;
+          mappedRecord["nu_birth_month"] = String(birthMonth).padStart(2, "0");
+          mappedRecord["nu_birth_day"] = String(birthDay).padStart(2, "0");
+
+        } else {
+          mappedRecord["dob"] = "";
+        }
+
+        const birthYearDOB = mappedRecord["nu_birth_year"] ? String(mappedRecord["nu_birth_year"]) : "";
+        const birthMonthDOB = mappedRecord["nu_birth_month"] ? String(mappedRecord["nu_birth_month"]).padStart(2, "0") : "";
+        const birthDayDOB = mappedRecord["nu_birth_day"] ? String(mappedRecord["nu_birth_day"]).padStart(2, "0") : "";
+        mappedRecord["date_of_birth"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}/${birthMonthDOB}/${birthDayDOB}` : "";
+
+        const deathYearDOD = mappedRecord["nu_death_year"] ? String(mappedRecord["nu_death_year"]) : "";
+        const deathMonthDOD = mappedRecord["nu_death_month"] ? String(mappedRecord["nu_death_month"]).padStart(2, "0") : "";
+        const deathDayDOD = mappedRecord["nu_death_day"] ? String(mappedRecord["nu_death_day"]).padStart(2, "0") : "";
+        mappedRecord["date_of_death"] = deathYearDOD && deathMonthDOD && deathDayDOD ? `${deathYearDOD}/${deathMonthDOD}/${deathDayDOD}` : "";
+
+
+        mappedRecord["age"] = record["nu_age"] || "";
+        mappedRecord["estimated_age"] = record["nu_age"] || "";
+        mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
+
+        const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
+        mappedRecord["age_unit"] = getAgeUnit(timeUnit);
+
+
+        const sex = record["ds_sex_en"]?.toString();
 
         mappedRecord["sex"] = getSex(sex);
-      
-
 
         return mappedRecord;
       });
@@ -364,43 +413,43 @@ if (
   };
 
   const sanitizeCSVValue = (value) => {
- if (value == null) return "";
+    if (value == null) return "";
 
-  let str = String(value);
+    let str = String(value);
 
-  // Remove carriage returns (can keep newlines if needed)
-  str = str.replace(/\r/g, "").replace(/\n/g, " ");
+    // Remove carriage returns (can keep newlines if needed)
+    str = str.replace(/\r/g, "").replace(/\n/g, " ");
 
-  // Escape quotes by doubling them
-  str = str.replace(/"/g, '""');
+    // Escape quotes by doubling them
+    str = str.replace(/"/g, '""');
 
-  // Wrap in quotes if value contains comma, quote, or newline
-  return /[",]/.test(str) ? `"${str}"` : str;
-};
-
-
-function getAgeUnit(timeUnit) {
-  if (!timeUnit) return "";
-  
-  const unitMap = {
-    'year': 'P_YD',
-    'months': 'P_M',
-    'days': 'P_D',
-    'hours': 'P_H',
-    'minutes': 'P_MIN',
-    // Add more mappings as needed
+    // Wrap in quotes if value contains comma, quote, or newline
+    return /[",]/.test(str) ? `"${str}"` : str;
   };
-  
-  return unitMap[timeUnit] || "";
-}
 
-function getSex(timeUnit) {
-  if (!timeUnit) return "";
-  
-  const unitMap = timeUnit.toUpperCase();
-  
-  return unitMap;
-}
+
+  function getAgeUnit(timeUnit) {
+    if (!timeUnit) return "";
+
+    const unitMap = {
+      'year': 'P_YD',
+      'months': 'P_M',
+      'days': 'P_D',
+      'hours': 'P_H',
+      'minutes': 'P_MIN',
+      // Add more mappings as needed
+    };
+
+    return unitMap[timeUnit] || "";
+  }
+
+  function getSex(timeUnit) {
+    if (!timeUnit) return "";
+
+    const unitMap = timeUnit.toUpperCase();
+
+    return unitMap;
+  }
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -424,64 +473,72 @@ function getSex(timeUnit) {
       }
     });
 
-     newHeaders.push(
-    "codA_underlying",
-    "codB_underlying",
-    "codC_underlying",
-    "codD_underlying"
-  );
+    newHeaders.push(
+      "codA_underlying",
+      "codB_underlying",
+      "codC_underlying",
+      "codD_underlying"
+    );
 
-  if (!newHeaders.includes("dob")) {
-  newHeaders.push("dob");
-}
+    if (!newHeaders.includes("dob")) {
+      newHeaders.push("dob");
+    }
 
-if (!newHeaders.includes("age")) {
-  newHeaders.push("age");
-}
+    if (!newHeaders.includes("age")) {
+      newHeaders.push("age");
+    }
 
-if (!newHeaders.includes("sex")) {
-  newHeaders.push("sex");
-}
+    if (!newHeaders.includes("sex")) {
+      newHeaders.push("sex");
+    }
 
-if (!newHeaders.includes("age_unit")) {
-  newHeaders.push("age_unit");  
-}
-if (!newHeaders.includes("estimated_age")) {
-  newHeaders.push("estimated_age");
-}
+    if (!newHeaders.includes("age_unit")) {
+      newHeaders.push("age_unit");
+    }
+    if (!newHeaders.includes("estimated_age")) {
+      newHeaders.push("estimated_age");
+    }
 
-if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
-  newHeaders.push("co_underlying_cause_icd11_cod");
-} 
+    if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
+      newHeaders.push("co_underlying_cause_icd11_cod");
+    }
 
 
     // Defining headers to be rename or duplicate
-  const headerTransforms = {
-    "co_original_identification": "system_id", // copy the value to a new column
-    // Add more if needed: "old_header": "new_header"
-  };
+    const headerTransforms = {
+      "co_original_identification": "system_id", // copy the value to a new column
+      // Add more if needed: "old_header": "new_header"
+    };
 
-  Object.values(headerTransforms).forEach((newHeader) => {
-    if (!newHeaders.includes(newHeader)) {
-      newHeaders.push(newHeader);
+    if (!newHeaders.includes('date_of_birth')) {
+      newHeaders.push('date_of_birth');
     }
-  });
+
+    if (!newHeaders.includes('date_of_death')) {
+      newHeaders.push('date_of_death');
+    }
+
+    Object.values(headerTransforms).forEach((newHeader) => {
+      if (!newHeaders.includes(newHeader)) {
+        newHeaders.push(newHeader);
+      }
+    });
 
 
     const csvContent = [
-  newHeaders.map(sanitizeCSVValue).join(","),
-  ...mappedData.map((row) => {
-    return newHeaders.map((header) => {
-      // Handle transformed headers if needed
-      const originalHeader = Object.entries(headerTransforms).find(
-        ([oldKey, newKey]) => newKey === header
-      )?.[0];
+      newHeaders.map(sanitizeCSVValue).join(","),
+      ...mappedData.map((row) => {
+        return newHeaders.map((header) => {
+          // Handle transformed headers if needed
+          const originalHeader = Object.entries(headerTransforms).find(
+            ([oldKey, newKey]) => newKey === header
+          )?.[0];
 
-      const value = originalHeader ? row[originalHeader] : row[header];
-      return sanitizeCSVValue(value);
-    }).join(",");
-  }),
-].join("\n");
+          const value = originalHeader ? row[originalHeader] : row[header];
+          return sanitizeCSVValue(value);
+        }).join(",");
+      }),
+    ].join("\n");
 
     return csvContent;
   };
@@ -498,8 +555,8 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
 
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);   
-    } catch (error) {     
+      document.body.removeChild(link);
+    } catch (error) {
       alert('Download failed. Please try again.');
     }
   };
@@ -524,25 +581,25 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
 
 
   function NativeDragDrop({ handleMappingFileUpload }) {
-  function handleDrop(event) {
-    event.preventDefault();
-    const files = event.dataTransfer.files;
+    function handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
 
-    // Filter files to only accept .txt files
-    const txtFiles = Array.from(files).filter(
-      (file) => file.type === "text/plain" || file.name.endsWith(".txt")
-    );
+      // Filter files to only accept .txt files
+      const txtFiles = Array.from(files).filter(
+        (file) => file.type === "text/plain" || file.name.endsWith(".txt")
+      );
 
-    if (txtFiles.length === 0) {
-      alert("Only .txt files are allowed");
-      return;
+      if (txtFiles.length === 0) {
+        alert("Only .txt files are allowed");
+        return;
+      }
+      handleMappingFileUpload(txtFiles);
     }
-    handleMappingFileUpload(txtFiles);
-  }
 
-  function handleDragOver(event) {
-    event.preventDefault();
-  }
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
 
     return (
       <div
@@ -558,41 +615,41 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
     );
   }
 
-    function NewNativeDragDrop({ handleImportFileUpload }) {
-     function handleDrop(event) {
-       event.preventDefault();
-       const files = event.dataTransfer.files;
+  function NewNativeDragDrop({ handleImportFileUpload }) {
+    function handleDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
 
-       // Filter files to only accept .csv files
-       const csvFiles = Array.from(files).filter(
-         (file) => file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv")
-       );
-
-       if (csvFiles.length === 0) {
-         alert("Only .csv files are allowed");
-         return;
-       }
-       handleImportFileUpload(csvFiles);
-     }
-
-     function handleDragOver(event) {
-       event.preventDefault();
-     }
-
-
-      return (
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          type="file"
-          accept=".csv"
-          className="drag-and-drop-files"
-        >
-          <img src="/upload.jpg" alt="upload icon" />
-          <h4 className="drag-name">Drag and drop files here</h4>
-        </div>
+      // Filter files to only accept .csv files
+      const csvFiles = Array.from(files).filter(
+        (file) => file.type === "text/csv" || file.name.toLowerCase().endsWith(".csv")
       );
+
+      if (csvFiles.length === 0) {
+        alert("Only .csv files are allowed");
+        return;
+      }
+      handleImportFileUpload(csvFiles);
     }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+
+
+    return (
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        type="file"
+        accept=".csv"
+        className="drag-and-drop-files"
+      >
+        <img src="/upload.jpg" alt="upload icon" />
+        <h4 className="drag-name">Drag and drop files here</h4>
+      </div>
+    );
+  }
 
 
 
@@ -608,91 +665,91 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
         </div>
       )}
 
-    {/* STEP CARDS ROW */}
-    <div className="icd-mapper-row">
-      {/* Step 1 */}
-      <div className="icd-mapper-col">
-        <div className="step-label-outside">Step 1</div>
-        <div className="rounded-md flex-container">
-          <div className="upload-div">
-            <h4 className="upload-styles">Upload Mapping File (TXT)</h4>
-            <div className="instruction-block">
-              <div className="instruction-a">
-                <span>(a) Download ICD-10 to 11 Conversion Table. </span>
-                <span
-                  className="download-template-link"
-                  onClick={downloadFile}
-                  style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8 }}
-                >
-                  Click to Download
-                </span>
+      {/* STEP CARDS ROW */}
+      <div className="icd-mapper-row">
+        {/* Step 1 */}
+        <div className="icd-mapper-col">
+          <div className="step-label-outside">Step 1</div>
+          <div className="rounded-md flex-container">
+            <div className="upload-div">
+              <h4 className="upload-styles">Upload Mapping File (TXT)</h4>
+              <div className="instruction-block">
+                <div className="instruction-a">
+                  <span>(a) Download ICD-10 to 11 Conversion Table. </span>
+                  <span
+                    className="download-template-link"
+                    onClick={downloadFile}
+                    style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8 }}
+                  >
+                    Click to Download
+                  </span>
+                </div>
+                <div className="instruction-b">(b) Upload mapping file. (.txt file)</div>
               </div>
-              <div className="instruction-b">(b) Upload mapping file. (.txt file)</div>
+              <div className="flex-spacer" />
+              <div className="file-container">
+                <NativeDragDrop handleMappingFileUpload={handleMappingFileUpload} />
+                <p className="or">or</p>
+                <label className="choose-files">
+                  Choose file
+                  <input
+                    type="file"
+                    accept=".txt"
+                    onChange={handleMappingFileUpload}
+                    hidden
+                  />
+                </label>
+              </div>
+              {mappingFile && (
+                <p className="file-name">
+                  File: {mappingFile.name} ({mappingData.length} mappings loaded)
+                </p>
+              )}
             </div>
-            <div className="flex-spacer" />
-            <div className="file-container">
-              <NativeDragDrop handleMappingFileUpload={handleMappingFileUpload} />
-              <p className="or">or</p>
-              <label className="choose-files">
-                Choose file
-                <input
-                  type="file"
-                  accept=".txt"
-                  onChange={handleMappingFileUpload}
-                  hidden
-                />
-              </label>
+          </div>
+        </div>
+        {/* Step 2 */}
+        <div className="icd-mapper-col">
+          <div className="step-label-outside">Step 2</div>
+          <div className="rounded-md flex-container">
+            <div className="upload-div">
+              <h4 className="upload-styles">Upload Import File (CSV)</h4>
+              <div className="instruction-block">
+                <div className="instruction-csv">Files must be in CSV format</div>
+              </div>
+              <div className="flex-spacer" />
+              <div className="file-container">
+                <NewNativeDragDrop handleImportFileUpload={handleImportFileUpload} />
+                <p className="or">or</p>
+                <label className="choose-files">
+                  Choose file
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportFileUpload}
+                    hidden
+                  />
+                </label>
+              </div>
+              {importFile && (
+                <p className="file-name">
+                  File: {importFile.name} ({importData.length} records loaded)
+                </p>
+              )}
             </div>
-            {mappingFile && (
-              <p className="file-name">
-                File: {mappingFile.name} ({mappingData.length} mappings loaded)
-              </p>
-            )}
           </div>
         </div>
       </div>
-      {/* Step 2 */}
-      <div className="icd-mapper-col">
-        <div className="step-label-outside">Step 2</div>
-        <div className="rounded-md flex-container">
-          <div className="upload-div">
-            <h4 className="upload-styles">Upload Import File (CSV)</h4>
-            <div className="instruction-block">
-              <div className="instruction-csv">Files must be in CSV format</div>
-            </div>
-            <div className="flex-spacer" />
-            <div className="file-container">
-              <NewNativeDragDrop handleImportFileUpload={handleImportFileUpload} />
-              <p className="or">or</p>
-              <label className="choose-files">
-                Choose file
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleImportFileUpload}
-                  hidden
-                />
-              </label>
-            </div>
-            {importFile && (
-              <p className="file-name">
-                File: {importFile.name} ({importData.length} records loaded)
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
 
       {/* BUTTON */}
-        <div className="mapping-btn-container">
-          <button
-            onClick={processMapping}
-            disabled={!mappingData.length || !importData.length || isProcessing}
-            className="mapping-btn"
-          >
-            {isProcessing ? "Processing..." : "Map ICD-10 to ICD-11 Codes"}
-          </button>
+      <div className="mapping-btn-container">
+        <button
+          onClick={processMapping}
+          disabled={!mappingData.length || !importData.length || isProcessing}
+          className="mapping-btn"
+        >
+          {isProcessing ? "Processing..." : "Map ICD-10 to ICD-11 Codes"}
+        </button>
       </div>
 
       {mappedData.length > 0 && (
@@ -702,30 +759,30 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
               Results: {mappedData.length} Records Mapped
             </h2>
             <button onClick={downloadCSV} className="btn">
-             <img src = "/download.png" alt="download icon"/>
+              <img src="/download.png" alt="download icon" />
               Download CSV
             </button>
           </div>
 
           <div className="table-div">
             <table className="main-table">
-                  <thead className="table-header tracking-wider uppercase">
-                    <tr>
+              <thead className="table-header tracking-wider uppercase">
+                <tr>
+                  <th className="table-header tracking-wider uppercase">
+                    Record ID
+                  </th>
+                  {icdColumns.map((column, index) => (
+                    <React.Fragment key={index}>
                       <th className="table-header tracking-wider uppercase">
-                        Record ID
+                        {column.replace("co_", "")}
                       </th>
-                      {icdColumns.map((column, index) => (
-                        <React.Fragment key={index}>
-                          <th className="table-header tracking-wider uppercase">
-                            {column.replace("co_", "")}
-                          </th>
-                          <th className="table-header uppercase tracking-wider">
-                            {column.replace("co_", "")} (ICD-11)
-                          </th>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  </thead>
+                      <th className="table-header uppercase tracking-wider">
+                        {column.replace("co_", "")} (ICD-11)
+                      </th>
+                    </React.Fragment>
+                  ))}
+                </tr>
+              </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {mappedData.slice(0, 5).map((record, index) => (
                   <tr key={index}>
@@ -748,18 +805,18 @@ if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
                     ))}
                   </tr>
                 ))}
-                 </tbody>
-               </table>
-                </div>
+              </tbody>
+            </table>
+          </div>
 
-                {mappedData.length > 5 && (
-                  <div
-                      colSpan={1 + icdColumns.length * 2}
-                      className="record-display"
-                    >
-                      Showing 5 of {mappedData.length} records.
-                  </div>
-                )}
+          {mappedData.length > 5 && (
+            <div
+              colSpan={1 + icdColumns.length * 2}
+              className="record-display"
+            >
+              Showing 5 of {mappedData.length} records.
+            </div>
+          )}
         </div>
       )}
     </div>
