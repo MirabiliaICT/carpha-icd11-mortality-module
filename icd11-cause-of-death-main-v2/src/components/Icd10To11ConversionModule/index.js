@@ -336,6 +336,21 @@ if (
 } else {
   mappedRecord["dob"] = "";
 }
+
+ mappedRecord["age"] = record["nu_age"] || "";
+  mappedRecord["estimated_age"] = record["nu_age"] || "";
+    mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
+
+    const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
+  mappedRecord["age_unit"] = getAgeUnit(timeUnit);
+
+
+      const sex = record["ds_sex_en"]?.toString()?.toUpperCase();
+
+        mappedRecord["sex"] = mappedRecord["ds_sex_en"]?.toString()?.toUpperCase();
+      
+
+
         return mappedRecord;
       });
 
@@ -363,6 +378,29 @@ if (
   return /[",]/.test(str) ? `"${str}"` : str;
 };
 
+
+function getAgeUnit(timeUnit) {
+  if (!timeUnit) return "";
+  
+  const unitMap = {
+    'year': 'P_YD',
+    'months': 'P_M',
+    'days': 'P_D',
+    'hours': 'P_H',
+    'minutes': 'P_MIN',
+    // Add more mappings as needed
+  };
+  
+  return unitMap[timeUnit] || "";
+}
+
+function getAgeUnit(timeUnit) {
+  if (!timeUnit) return "";
+  
+  const unitMap = timeUnit.
+  
+  return unitMap[timeUnit] || "";
+}
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -397,6 +435,25 @@ if (
   newHeaders.push("dob");
 }
 
+if (!newHeaders.includes("age")) {
+  newHeaders.push("age");
+}
+
+if (!newHeaders.includes("sex")) {
+  newHeaders.push("sex");
+}
+
+if (!newHeaders.includes("age_unit")) {
+  newHeaders.push("age_unit");  
+}
+if (!newHeaders.includes("estimated_age")) {
+  newHeaders.push("estimated_age");
+}
+
+if (!newHeaders.includes("co_underlying_cause_icd11_cod")) {
+  newHeaders.push("co_underlying_cause_icd11_cod");
+} 
+
 
     // Defining headers to be rename or duplicate
   const headerTransforms = {
@@ -410,26 +467,6 @@ if (
     }
   });
 
-
-
-
-    // Generate CSV content with the new column order
-    // const csvContent = [
-    //   newHeaders.map((header) => `"${header}"`).join(","),
-    //   ...mappedData.map((row) => {
-    //     return newHeaders
-    //       .map((header) => {
-    //           const originalHeader = Object.entries(headerTransforms).find(
-    //         ([oldKey, newKey]) => newKey === header
-    //       )?.[0];
-
-    //       const value = originalHeader ? row[originalHeader] : row[header];
-    //         // const value = row[header] || "";
-    //         return `"${value}"`;
-    //       })
-    //       .join(",");
-    //   }),
-    // ].join("\n");
 
     const csvContent = [
   newHeaders.map(sanitizeCSVValue).join(","),

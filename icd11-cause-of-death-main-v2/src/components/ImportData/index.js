@@ -504,6 +504,8 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                 setUserDetails(userDetail);
             } else {
                 console.error('Expected an array but got:', userDetail);
+             setUserDetails(userDetail);
+
             }
         };
 
