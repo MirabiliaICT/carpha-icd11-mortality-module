@@ -61,19 +61,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         erroredRows: []
     });
 
-    // const [fileData, setFileData] = useState(null);
     const [loading, setLoading] = useState(false);
-    // const [processingData, setProcessingData] = useState({
-    //     isProcessing: false,
-    //     hasStarted: false,
-    //     totalRows: 0,
-    //     processedRows: 0,
-    //     data: [],
-    //     error: null,
-    //     errorCount: 0,
-    //     erroredRows: []
-    // });
-
     const [progress, setProgress] = useState(0);
     const { dataApi, metadataApi } = useApi();
     const { keyUiLocale } = metadata;
@@ -333,7 +321,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
     const writeCsv = (responses, filePath, originalHeadersx, originalData) => {
         // Combine the original headers with the report headers
-        const header = [...originalHeadersx, "stemCode", "stemURI", "code", "uri", "report", "reject", "error", "warning", "system_id"].map(header => header.trim());
+        const header = [...originalHeadersx, "stemCode", "code", "uri", "report", "reject", "error", "warning", "system_id", "dob"].map(header => header.trim());
 
         // Escape special characters in the report field
         const escapeReport = (report) => {
@@ -355,6 +343,20 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
             error = error.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
             return `"${error}"`; // Wrap the report in double quotes to handle commas
         };
+
+                    // Escape special characters in the error field
+        // const escapeURI = (uri) => {
+        //     if (!uri) return '';
+        //     uri = uri.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
+        //     return `"${uri}"`; // Wrap the report in double quotes to handle commas
+        // };
+
+            // Escape special characters in the error field
+        // const escapeStemURI = (stemURI) => {
+        //     if (!stemURI) return '';
+        //     stemURI = stemURI.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
+        //     return `"${stemURI}"`; // Wrap the report in double quotes to handle commas
+        // };
 
         // Function to transform Sex column values
     const transformSexValue = (value) => {
@@ -378,18 +380,22 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         
         // Get the first column value for system_id
         const firstColumnValue = transformedRow[0];
+                const dobColumnValue = transformedRow[4];
+
         
         return [
             ...transformedRow, // Original row values with Sex transformation
             response.stemCode,
-            response.stemURI,
+        //    escapeStemURI( response.stemURI),
             response.code,
-            response.uri,
+            // escapeURI(response.uri),
             escapeReport(response.report), // Escaped report field
             response.reject,
             escapeError(response.error),
             escapeWarning(response.warning),
-            firstColumnValue // Add first column value as system_id
+            firstColumnValue, // Add first column value as system_id
+                        dobColumnValue // Add first column value as system_id
+
         ].join(","); // Join the row with commas
     })
 ].join("\n");

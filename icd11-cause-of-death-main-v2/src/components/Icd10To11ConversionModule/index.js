@@ -24,41 +24,6 @@ function ICDCodeMapper() {
     "co_associated_cause_d",
   ];
 
-  // Parse the mapping file (txt)
-  {/* const handleMappingFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setMappingFile(file);
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      try {
-        const content = e.target.result;
-        const lines = content.split("\n").filter((line) => line.trim());
-
-        // Skip header line
-        const data = lines.slice(1).map((line) => {
-          const columns = line.split("\t");
-          return {
-            icd10Code: columns[2], // icd10Code column
-            icd11Code: columns[9], // icd11Code column
-            icd10Title: columns[4], // icd10Title column
-            icd11Title: columns[11], // icd11Title column
-          };
-        });
-
-        setMappingData(data);
-        setError("");
-      } catch (err) {
-        setError("Error parsing mapping file: " + err.message);
-      }
-    };
-
-    reader.readAsText(file);
-  };
-*/}
-
   const handleMappingFileUpload = (eventOrFiles) => {
     let file;
 
@@ -152,44 +117,6 @@ function ICDCodeMapper() {
 
     reader.readAsText(file);
   };
-
-  {/* const handleImportFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setImportFile(file);
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      try {
-        const content = e.target.result;
-        const lines = content.split("\n").filter((line) => line.trim());
-
-        // Parse CSV header
-        const header = parseCSVLine(lines[0]);
-        setOriginalHeaders(header);
-
-        // Parse the data rows
-        const data = lines.slice(1).map((line) => {
-          const values = parseCSVLine(line);
-          const record = {};
-
-          header.forEach((column, index) => {
-            record[column] = values[index] || "";
-          });
-
-          return record;
-        });
-
-        setImportData(data);
-        setError("");
-      } catch (err) {
-        setError("Error parsing import file: " + err.message);
-      }
-    };
-
-    reader.readAsText(file);
-  };*/}
 
   // Better CSV parser to handle quoted values
   const parseCSVLine = (line) => {
@@ -347,7 +274,6 @@ function ICDCodeMapper() {
         ) {
 
           const birthYear = deathYear - age;
-          mappedRecord["dob"] = `${birthYear}-${String(deathMonth).padStart(2, "0")}-${String(deathDay).padStart(2, "0")}`;
 
           mappedRecord["nu_death_day"] = String(deathDay).padStart(2, "0");
           mappedRecord["nu_death_month"] = String(deathMonth).padStart(2, "0");
@@ -367,20 +293,18 @@ function ICDCodeMapper() {
         ) {
 
           const birthYear = birthYears + age;
-          mappedRecord["dob"] = `${birthYear}-${String(birthMonth).padStart(2, "0")}-${String(birthDay).padStart(2, "0")}`;
 
           mappedRecord["nu_birth_year"] = birthYear;
           mappedRecord["nu_birth_month"] = String(birthMonth).padStart(2, "0");
           mappedRecord["nu_birth_day"] = String(birthDay).padStart(2, "0");
 
         } else {
-          mappedRecord["dob"] = "";
         }
 
         const birthYearDOB = mappedRecord["nu_birth_year"] ? String(mappedRecord["nu_birth_year"]) : "";
         const birthMonthDOB = mappedRecord["nu_birth_month"] ? String(mappedRecord["nu_birth_month"]).padStart(2, "0") : "";
         const birthDayDOB = mappedRecord["nu_birth_day"] ? String(mappedRecord["nu_birth_day"]).padStart(2, "0") : "";
-        mappedRecord["date_of_birth"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}/${birthMonthDOB}/${birthDayDOB}` : "";
+        mappedRecord["dob"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}/${birthMonthDOB}/${birthDayDOB}` : "";
 
         const deathYearDOD = mappedRecord["nu_death_year"] ? String(mappedRecord["nu_death_year"]) : "";
         const deathMonthDOD = mappedRecord["nu_death_month"] ? String(mappedRecord["nu_death_month"]).padStart(2, "0") : "";
@@ -389,16 +313,24 @@ function ICDCodeMapper() {
 
 
         mappedRecord["age"] = record["nu_age"] || "";
+
+        const sexSourceValue = record.hasOwnProperty("ds_sex_en")
+          ? record["ds_sex_en"]
+          : record["co_sex"];
+
+        // 2. Convert to uppercase
+        mappedRecord["sex"] = sexSourceValue ? String(sexSourceValue).trim().toUpperCase() : "";
+
+        if (sexSourceValue === "1") mappedRecord["sex"] = "MALE";
+        if (sexSourceValue === "2") mappedRecord["sex"] = "FEMALE";
+
+        // mappedRecord["sex"] = record["ds_sex_en"] ? String(record["ds_sex_en"]).toUpperCase() : ""; 
         mappedRecord["estimated_age"] = record["nu_age"] || "";
         mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
 
         const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
         mappedRecord["age_unit"] = getAgeUnit(timeUnit);
 
-
-        const sex = record["ds_sex_en"]?.toString();
-
-        mappedRecord["sex"] = getSex(sex);
 
         return mappedRecord;
       });
@@ -432,24 +364,23 @@ function ICDCodeMapper() {
     if (!timeUnit) return "";
 
     const unitMap = {
-      'year': 'P_YD',
+      'years': 'P_YD',
       'months': 'P_M',
       'days': 'P_D',
-      'hours': 'P_H',
-      'minutes': 'P_MIN',
+      'hours': 'PT_H',
+      'minutes': 'PT_M',
+      'year': 'P_YD',
+      'month': 'P_M',
+      'day': 'P_D',
+      'hour': 'PT_H',
+      'minute': 'PT_M',
       // Add more mappings as needed
     };
 
     return unitMap[timeUnit] || "";
   }
 
-  function getSex(timeUnit) {
-    if (!timeUnit) return "";
 
-    const unitMap = timeUnit.toUpperCase();
-
-    return unitMap;
-  }
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -480,9 +411,9 @@ function ICDCodeMapper() {
       "codD_underlying"
     );
 
-    if (!newHeaders.includes("dob")) {
-      newHeaders.push("dob");
-    }
+    // if (!newHeaders.includes("dob")) {
+    //   newHeaders.push("dob");
+    // }
 
     if (!newHeaders.includes("age")) {
       newHeaders.push("age");
@@ -503,6 +434,15 @@ function ICDCodeMapper() {
       newHeaders.push("co_underlying_cause_icd11_cod");
     }
 
+    if (!newHeaders.includes('dob')) {
+      newHeaders.push('dob');
+    }
+
+    if (!newHeaders.includes('date_of_death')) {
+      newHeaders.push('date_of_death');
+    }
+
+
 
     // Defining headers to be rename or duplicate
     const headerTransforms = {
@@ -510,19 +450,14 @@ function ICDCodeMapper() {
       // Add more if needed: "old_header": "new_header"
     };
 
-    if (!newHeaders.includes('date_of_birth')) {
-      newHeaders.push('date_of_birth');
-    }
-
-    if (!newHeaders.includes('date_of_death')) {
-      newHeaders.push('date_of_death');
-    }
 
     Object.values(headerTransforms).forEach((newHeader) => {
       if (!newHeaders.includes(newHeader)) {
         newHeaders.push(newHeader);
       }
     });
+
+
 
 
     const csvContent = [
