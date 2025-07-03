@@ -527,229 +527,282 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
 
     const handleFileUploadToDhis = (file) => {
+    const formMapping = require("../../asset/metadata/mapping.json");
 
-        const formMapping = require("../../asset/metadata/mapping.json");
+    if (!file) return false;
 
-        if (!file) return false;
+    // if(!selectedOrgUnit){
+    //     message.info("Selected an org");
+    //     return;
+    // }
 
-        // if(!selectedOrgUnit){
-        //     message.info("Selected an org");
-        //     return;
-        // }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const content = e.target.result;
+            let parsedData = [];
+            let headers = [];
+            let orgUnitID = selectedOrgUnit;
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const content = e.target.result;
-                let parsedData = [];
-                let headers = [];
-                let orgUnitID = selectedOrgUnit;
+            if (file.type === "text/csv" || file.name.toLowerCase().endsWith('.csv')) {
+                // Use proper CSV parsing instead of naive string splitting
+                const parsedCSV = parseCSV(content);
+                
+                if (parsedCSV.length > 0) {
+                    // Extract and clean headers
+                    headers = parsedCSV[0].map(header => cleanCSVValue(header));
+                    
+                    console.log("Extracted Headers: properlyyyyyyyyyyy", headers);
+                    const dataElementsMapping = formMapping.dataElements;
+                    const dataAttributesMapping = formMapping.attributes;
 
-                if (file.type === "text/csv") {
-                    const rows = content.split('\n').filter(line => line.trim() !== '');
-                    if (rows.length > 0) {
-                        headers = rows[0].split(',').map(header => header.trim());
-                        const dataElementsMapping = formMapping.dataElements;
-                        const dataAttributesMapping = formMapping.attributes;
-
-                        // Mapping headers to dataElement/attribute IDs
-                        const mappedHeaders = headers.map(header => {
-                            const dataElementKey = Object.keys(dataElementsMapping).find(
-                                key => key.toLowerCase() === header.toLowerCase()
-                            );
-                            if (dataElementKey) {
-                                return { type: "dataElement", id: dataElementsMapping[dataElementKey] };
-                            }
-
-                            const attributeKey = Object.keys(dataAttributesMapping).find(
-                                key => key.toLowerCase() === header.toLowerCase()
-                            );
-                            if (attributeKey) {
-
-                                console.log(attributeKey + "attributeattribute")
-                                return { type: "attribute", id: dataAttributesMapping[attributeKey] };
-                            }
-
-                            return { type: "unknown", id: header };
-                        });
-
-                        for (let i = 1; i < rows.length; i++) {
-                            const values = rows[i].split(',');
-                            const dataValues = [];
-                            const attributeValues = [];
-
-
-                            for (let j = 0; j < headers.length; j++) {
-                                const mappedHeader = mappedHeaders[j];
-                                const valueCLeaned = values[j] ? values[j].trim() : "";
-                                const value = valueCLeaned !== null ? valueCLeaned : "";
-
-
-                                if (mappedHeader.type === "dataElement") {
-
-                                    dataValues.push({ dataElement: mappedHeader.id, value });
-                                }
-
-                                if (mappedHeader.type === "attribute") {
-
-                                    attributeValues.push({ attribute: mappedHeader.id, value });
-
-                                    console.log("attribute logged " + mappedHeader.id);
-
-                                    console.log("attribute  value logged " + value);
-
-                                }
-                            }
-
-                            // Build the payload structure for each row
-                            const trackID = generateCode();
-                            const enrollmentID = generateCode();
-                            const programid = "ogrOUKoSaWA";
-                            const programStageId = "WlWJt4lVSWw";
-                            const trackedEntityTypeId = 'RQrHOJGKT5H';
-
-                            const dateandTime = new Date().toISOString().split('T')[0];
-
-                            const eventPayload = {
-
-                                enrollment: {
-                                    //storedBy : thu username 
-                                    createdAtClient: dateandTime,
-                                    program: programid,
-                                    lastUpdated: dateandTime,
-                                    created: dateandTime,
-                                    orgUnit: orgUnitID,
-                                    enrollment: enrollmentID,      // Keep the ID
-                                    trackedEntityInstance: trackID,
-                                    trackedEntityType: trackedEntityTypeId,
-                                    //orgUnitName: fetch from api 
-                                    lastUpdatedAtClient: dateandTime,
-                                    enrollmentDate: new Date().toISOString().split('T')[0],
-                                    deleted: false,
-                                    incidentDate: new Date().toISOString().split('T')[0],
-                                    status: "COMPLETED",
-                                    lastUpdatedByUserInfo: {
-                                        uid: userDetails.id,
-                                        firstName: userDetails.firstName,
-                                        surname: userDetails.surname,
-                                        username: userDetails.username
-                                    },
-                                    createdByUserInfo: {
-                                         uid: userDetails.id,
-                                        firstName: userDetails.firstName,
-                                        surname: userDetails.surname,
-                                        username: userDetails.username
-                                    },
-                                    notes: [
-                                    ],
-                                    relationships: [
-                                    ],
-                                    attributes: attributeValues,
-
-                                    isDirty: true,
-                                    isNew: true
-
-                                },
-
-                                trackedEntityInstance: {
-                                    created: dateandTime,
-                                    createdAtClient: dateandTime,
-                                    lastUpdated: dateandTime,
-                                    trackedEntityType: trackedEntityTypeId,
-                                    lastUpdatedAtClient: dateandTime,
-                                    //storedBy : thu username 
-                                    potentialDuplicate: false,
-                                    inactive: false,
-                                    deleted: false,
-                                    featureType: "NONE",
-
-                                    lastUpdatedByUserInfo: {
-                                        uid: userDetails.id,
-                                        firstName: userDetails.firstName,
-                                        surname: userDetails.surname,
-                                        username: userDetails.username
-                                    },
-                                    createdByUserInfo: {
-                                       uid: userDetails.id,
-                                        firstName: userDetails.firstName,
-                                        surname: userDetails.surname,
-                                        username: userDetails.username
-                                    },
-
-                                    programOwners: [
-                                        {
-                                            ownerOrgUnit: orgUnitID,
-                                            program: programid,
-                                            trackedEntityInstance: trackID
-                                        }
-                                    ],
-                                    relationships: [],
-
-                                    orgUnit: orgUnitID,
-                                    program: programid,
-                                    attributes: attributeValues,
-                                    trackedEntityInstance: trackID
-                                },
-                                events: {},
-                                event: {
-                                    event: generateCode(),
-                                    isDirty: false,
-                                    isNew: true,
-                                    orgUnit: orgUnitID,
-                                    enrollment: enrollmentID,
-                                    trackedEntityInstance: trackID,
-                                    program: programid,
-                                    programStage: programStageId,
-                                    dataValues: dataValues,
-                                    eventDate: new Date().toISOString().split('T')[0],
-                                    dueDate: new Date().toISOString().split('T')[0],
-                                    attributes: attributeValues
-                                }
-                            };
-                            parsedData.push(eventPayload);
+                    // Mapping headers to dataElement/attribute IDs
+                    const mappedHeaders = headers.map(header => {
+                        const dataElementKey = Object.keys(dataElementsMapping).find(
+                            key => key.toLowerCase() === header.toLowerCase()
+                        );
+                        if (dataElementKey) {
+                            return { type: "dataElement", id: dataElementsMapping[dataElementKey] };
                         }
+
+                        const attributeKey = Object.keys(dataAttributesMapping).find(
+                            key => key.toLowerCase() === header.toLowerCase()
+                        );
+                        if (attributeKey) {
+                            console.log(attributeKey + "attributeattribute");
+                            return { type: "attribute", id: dataAttributesMapping[attributeKey] };
+                        }
+
+                        return { type: "unknown", id: header };
+                    });
+
+                    // Process data rows (skip header row)
+                    for (let i = 1; i < parsedCSV.length; i++) {
+                        const values = parsedCSV[i];
+                        const dataValues = [];
+                        const attributeValues = [];
+
+                        for (let j = 0; j < headers.length; j++) {
+                            const mappedHeader = mappedHeaders[j];
+                            // Clean the CSV value properly
+                            const valueCleaned = values[j] ? cleanCSVValue(values[j]) : "";
+                            const value = valueCleaned !== null ? valueCleaned : "";
+
+                            if (mappedHeader.type === "dataElement") {
+                                dataValues.push({ dataElement: mappedHeader.id, value });
+                            }
+
+                            if (mappedHeader.type === "attribute") {
+                                attributeValues.push({ attribute: mappedHeader.id, value });
+                                console.log("attribute logged " + mappedHeader.id);
+                                console.log("attribute value logged " + value);
+                            }
+                        }
+
+                        // Build the payload structure for each row
+                        const trackID = generateCode();
+                        const enrollmentID = generateCode();
+                        const programid = "ogrOUKoSaWA";
+                        const programStageId = "WlWJt4lVSWw";
+                        const trackedEntityTypeId = 'RQrHOJGKT5H';
+
+                        const dateandTime = new Date().toISOString().split('T')[0];
+
+                        const eventPayload = {
+                            enrollment: {
+                                //storedBy : thu username 
+                                createdAtClient: dateandTime,
+                                program: programid,
+                                lastUpdated: dateandTime,
+                                created: dateandTime,
+                                orgUnit: orgUnitID,
+                                enrollment: enrollmentID,      // Keep the ID
+                                trackedEntityInstance: trackID,
+                                trackedEntityType: trackedEntityTypeId,
+                                //orgUnitName: fetch from api 
+                                lastUpdatedAtClient: dateandTime,
+                                enrollmentDate: new Date().toISOString().split('T')[0],
+                                deleted: false,
+                                incidentDate: new Date().toISOString().split('T')[0],
+                                status: "COMPLETED",
+                                lastUpdatedByUserInfo: {
+                                    uid: userDetails.id,
+                                    firstName: userDetails.firstName,
+                                    surname: userDetails.surname,
+                                    username: userDetails.username
+                                },
+                                createdByUserInfo: {
+                                    uid: userDetails.id,
+                                    firstName: userDetails.firstName,
+                                    surname: userDetails.surname,
+                                    username: userDetails.username
+                                },
+                                notes: [],
+                                relationships: [],
+                                attributes: attributeValues,
+                                isDirty: true,
+                                isNew: true
+                            },
+
+                            trackedEntityInstance: {
+                                created: dateandTime,
+                                createdAtClient: dateandTime,
+                                lastUpdated: dateandTime,
+                                trackedEntityType: trackedEntityTypeId,
+                                lastUpdatedAtClient: dateandTime,
+                                //storedBy : thu username 
+                                potentialDuplicate: false,
+                                inactive: false,
+                                deleted: false,
+                                featureType: "NONE",
+
+                                lastUpdatedByUserInfo: {
+                                    uid: userDetails.id,
+                                    firstName: userDetails.firstName,
+                                    surname: userDetails.surname,
+                                    username: userDetails.username
+                                },
+                                createdByUserInfo: {
+                                    uid: userDetails.id,
+                                    firstName: userDetails.firstName,
+                                    surname: userDetails.surname,
+                                    username: userDetails.username
+                                },
+
+                                programOwners: [
+                                    {
+                                        ownerOrgUnit: orgUnitID,
+                                        program: programid,
+                                        trackedEntityInstance: trackID
+                                    }
+                                ],
+                                relationships: [],
+
+                                orgUnit: orgUnitID,
+                                program: programid,
+                                attributes: attributeValues,
+                                trackedEntityInstance: trackID
+                            },
+                            events: {},
+                            event: {
+                                event: generateCode(),
+                                isDirty: false,
+                                isNew: true,
+                                orgUnit: orgUnitID,
+                                enrollment: enrollmentID,
+                                trackedEntityInstance: trackID,
+                                program: programid,
+                                programStage: programStageId,
+                                dataValues: dataValues,
+                                eventDate: new Date().toISOString().split('T')[0],
+                                dueDate: new Date().toISOString().split('T')[0],
+                                attributes: attributeValues
+                            }
+                        };
+                        parsedData.push(eventPayload);
                     }
-
-                    console.log("parsedDataparsedDataparsedData" + parsedData);
-
-
-
-                } else {
-                    throw new Error('Unsupported file format');
                 }
 
-                setDhisFileData({
-                    content: parsedData,
-                    fileName: file.name,
-                    type: file.type,
-                    headers: headers,
-                    orgUnitID: selectedOrgUnit
-                });
+                console.log("parsedDataparsedDataparsedData", parsedData);
 
-                setDhisProcessingData({
-                    isProcessing: false,
-                    hasStarted: false,
-                    totalRows: parsedData.length,
-                    processedRows: 0,
-                    data: parsedData,
-                    error: null,
-                    rrorCount: 0,
-                    erroredRows: []
-                });
-
-                console.log("Generated Parsed Payload:", parsedData);
-
-            } catch (error) {
-                setDhisProcessingData(prev => ({
-                    ...prev,
-                    error: error.message
-                }));
+            } else {
+                throw new Error('Unsupported file format');
             }
-        };
 
-        reader.readAsText(file);
-        return false;
+            setDhisFileData({
+                content: parsedData,
+                fileName: file.name,
+                type: file.type,
+                headers: headers,
+                orgUnitID: selectedOrgUnit
+            });
+
+            setDhisProcessingData({
+                isProcessing: false,
+                hasStarted: false,
+                totalRows: parsedData.length,
+                processedRows: 0,
+                data: parsedData,
+                error: null,
+                errorCount: 0, // Fixed typo: was "rrorCount"
+                erroredRows: []
+            });
+
+            console.log("Generated Parsed Payload:", parsedData);
+
+        } catch (error) {
+            console.error('DHIS2 file parsing error:', error);
+            setDhisProcessingData(prev => ({
+                ...prev,
+                error: error.message
+            }));
+        }
     };
+
+    reader.readAsText(file);
+    return false;
+};
+
+// Proper CSV parser that handles quotes, commas, and newlines correctly
+const parseCSV = (text) => {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    let row = [];
+    
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Handle escaped quotes ("")
+                current += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote state
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            // End of field
+            row.push(current);
+            current = '';
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+            // End of row
+            if (char === '\r' && nextChar === '\n') {
+                i++; // Skip \n in \r\n
+            }
+            row.push(current);
+            if (row.some(field => field.trim() !== '') || row.length > 1) {
+                result.push(row);
+            }
+            row = [];
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    // Handle last field/row if text doesn't end with newline
+    if (current || row.length > 0) {
+        row.push(current);
+        if (row.some(field => field.trim() !== '') || row.length > 1) {
+            result.push(row);
+        }
+    }
+    
+    return result;
+};
+
+// Function to clean CSV values by removing unwanted newlines and normalizing whitespace
+const cleanCSVValue = (value) => {
+    if (!value) return '';
+    
+    return value
+        .replace(/\r?\n/g, ' ')     // Replace newlines with spaces
+        .replace(/\s+/g, ' ')       // Replace multiple spaces with single space
+        .trim();                    // Trim leading/trailing whitespace
+};
 
     const writeDhisCsv = (processedData, filePath, originalHeaders, originalData, erroredRows) => {
         // Combine the original headers with the DHIS result headers
