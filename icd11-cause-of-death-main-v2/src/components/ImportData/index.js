@@ -297,9 +297,6 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
             }
         }
 
-        console.log("writeCsv----" + headers)
-        console.log("writeCsv----" + deathCertificates)
-
 
         const now = new Date();
         const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
@@ -319,97 +316,276 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
 
     };
 
-    const writeCsv = (responses, filePath, originalHeadersx, originalData) => {
-        // Combine the original headers with the report headers
-        const header = [...originalHeadersx, "stemCode", "code", "uri", "report", "reject", "error", "warning", "system_id", "dob"].map(header => header.trim());
 
-        // Escape special characters in the report field
-        const escapeReport = (report) => {
-            if (!report) return '';
-            report = report.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${report}"`; // Wrap the report in double quotes to handle commas
-        };
+// Add this function before the writeCsv function
+const calculateDobFromDeathAndAge = (dateDeath, age) => {
+    if (!dateDeath || !age) return '';
+    
+    try {
+        // Parse the death date (assuming MM/DD/YYYY format like "9/24/2023")
+        const deathDate = new Date(dateDeath);
+        
+        // Check if the date is valid
+        if (isNaN(deathDate.getTime())) {
+            console.warn('Invalid death date format:', dateDeath);
+            return '';
+        }
+        
+        // Calculate birth year by subtracting age from death year
+        const birthYear = deathDate.getFullYear() - parseInt(age);
+        
+        // Create birth date using the same month and day as death date
+        // This is an approximation - the actual birth date could be up to a year different
+        const birthDate = new Date(deathDate);
+        birthDate.setFullYear(birthYear);
+        
+        // Format as YYYY-MM-DD
+        const month = (birthDate.getMonth() + 1).toString().padStart(2, '0');
+        const day = birthDate.getDate().toString().padStart(2, '0');
+        const year = birthDate.getFullYear().toString();
+        
+        return `${year}-${month}-${day}`;
+        
+    } catch (error) {
+        console.error('Error calculating DOB from death date and age:', error);
+        return '';
+    }
+};
 
-        // Escape special characters in the report field
-        const escapeWarning = (warning) => {
-            if (!warning) return '';
-            warning = warning.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${warning}"`; // Wrap the report in double quotes to handle commas
-        };
-
-        // Escape special characters in the error field
-        const escapeError = (error) => {
-            if (!error) return '';
-            error = error.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${error}"`; // Wrap the report in double quotes to handle commas
-        };
-
-                    // Escape special characters in the error field
-        // const escapeURI = (uri) => {
-        //     if (!uri) return '';
-        //     uri = uri.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-        //     return `"${uri}"`; // Wrap the report in double quotes to handle commas
-        // };
-
-            // Escape special characters in the error field
-        // const escapeStemURI = (stemURI) => {
-        //     if (!stemURI) return '';
-        //     stemURI = stemURI.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-        //     return `"${stemURI}"`; // Wrap the report in double quotes to handle commas
-        // };
-
-        // Function to transform Sex column values
+const writeCsv = (responses, filePath, originalHeadersx, originalData) => {
+    // Trim original headers for consistency
+    const trimmedOriginalHeaders = originalHeadersx.map(header => header.trim());
+    
+    // Combine the original headers with the report headers
+    const header = [...trimmedOriginalHeaders, "stemCode", "code", "uri", "report", "reject", "error", "warning", "system_id", "dob", "age"];
+    
+    // Escape special characters in text fields
+    const escapeField = (field) => {
+        if (!field) return '';
+        // Convert to string and escape
+        const fieldStr = String(field);
+        const escaped = fieldStr.replace(/\n/g, "\\n").replace(/"/g, '""');
+        return `"${escaped}"`; // Wrap in double quotes to handle commas and other special chars
+    };
+    
+    // Function to transform Sex column values
     const transformSexValue = (value) => {
-        if (value === 1 || value === '1') {return 'Male';}
-        else if (value === 2 || value === '2') {return 'Female';}
-        else {return 'Unknown';}
+        if (value === 1 || value === '1') return 'Male';
+        else if (value === 2 || value === '2') return 'Female';
+        else return 'Unknown';
     };
-
+    
+    // Function to safely get column value by header name
+    const getColumnValue = (row, headerName) => {
+        const index = trimmedOriginalHeaders.indexOf(headerName.trim());
+        return index !== -1 ? row[index] : '';
+    };
+    
     const csvContent = [
-    header.join(","), // Header row
-    ...responses.map((response, index) => {
-        const originalRow = originalData[index];
-        const transformedRow = originalHeadersx.map(header => {
-            const value = originalRow[header];
-            // Check if this is the Sex column and transform the value
-            if (header.trim().toLowerCase() === 'sex') {
-                return transformSexValue(value);
+        header.join(","), // Header row
+        ...responses.map((response, index) => {
+            const originalRow = originalData[index];
+            
+            // Transform original row data
+            const transformedRow = trimmedOriginalHeaders.map(headerName => {
+                const value = originalRow[headerName] || originalRow[headerName.trim()];
+                
+                // Check if this is the Sex column and transform the value
+                if (headerName.toLowerCase() === 'sex') {
+                    return transformSexValue(value);
+                }
+                return value || ''; // Ensure we return empty string for undefined values
+            });
+            
+            // Get specific column values by name (more reliable than index)
+            const systemIdValue = getColumnValue(transformedRow, trimmedOriginalHeaders[0]) || transformedRow[0] || '';
+            const rawAgeValue = getColumnValue(transformedRow, trimmedOriginalHeaders[6]) || transformedRow[6] || '';
+            const parsedAge = parseEstimatedAge(rawAgeValue);
+            
+            // Use the already parsed result instead of calling the function again
+            const ageValue = rawAgeValue && parsedAge && parsedAge.isValid ? parsedAge.age : "";
+            
+            // Get DateBirth and DateDeath values
+            const dateBirthValue = getColumnValue(transformedRow, 'DateBirth') || '';
+            const dateDeathValue = getColumnValue(transformedRow, 'DateDeath') || '';
+            
+            // DOB Logic: Use DateBirth if available, otherwise calculate from DateDeath and age
+            let dobValue = '';
+            if (dateBirthValue && dateBirthValue.trim() !== '') {
+                // Convert DateBirth to YYYY-MM-DD format
+                try {
+                    const birthDate = new Date(dateBirthValue.trim());
+                    if (!isNaN(birthDate.getTime())) {
+                        const month = (birthDate.getMonth() + 1).toString().padStart(2, '0');
+                        const day = birthDate.getDate().toString().padStart(2, '0');
+                        const year = birthDate.getFullYear().toString();
+                        dobValue = `${year}-${month}-${day}`;
+                    } else {
+                        dobValue = dateBirthValue.trim(); // Keep original if conversion fails
+                    }
+                } catch (error) {
+                    dobValue = dateBirthValue.trim(); // Keep original if conversion fails
+                }
+            } else if (dateDeathValue && ageValue && ageValue !== '') {
+                // Calculate DOB from DateDeath and age if DateBirth is not available
+                dobValue = calculateDobFromDeathAndAge(dateDeathValue, ageValue);      
+            } else {
+                // No DOB calculation possible
+                dobValue = '';
+                if (!dateBirthValue && (!dateDeathValue || !ageValue)) {
+                    console.warn(`Cannot determine DOB for record ${index + 1}: DateBirth=${dateBirthValue}, DateDeath=${dateDeathValue}, Age=${ageValue}`);
+                }
             }
-            return value;
-        });
-        
-        // Get the first column value for system_id
-        const firstColumnValue = transformedRow[0];
-                const dobColumnValue = transformedRow[4];
+            
+            // Build the complete row
+            const completeRow = [
+                ...transformedRow, // Original row values with transformations
+                response.stemCode || '',
+                response.code || '',
+                response.uri || '', // Include URI in output
+                escapeField(response.report), // Escaped report field
+                response.reject,
+                escapeField(response.error),
+                escapeField(response.warning),
+                systemIdValue, // First column value as system_id
+                dobValue, // DOB value (DateBirth or calculated)
+                ageValue
+            ];
+            
+            return completeRow.join(",");
+        })
+    ].join("\n");
+    
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filePath);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
 
-        
-        return [
-            ...transformedRow, // Original row values with Sex transformation
-            response.stemCode,
-        //    escapeStemURI( response.stemURI),
-            response.code,
-            // escapeURI(response.uri),
-            escapeReport(response.report), // Escaped report field
-            response.reject,
-            escapeError(response.error),
-            escapeWarning(response.warning),
-            firstColumnValue, // Add first column value as system_id
-                        dobColumnValue // Add first column value as system_id
 
-        ].join(","); // Join the row with commas
-    })
-].join("\n");
-
-        // Create and download the CSV file
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filePath);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+/**
+ * Parses ISO 8601 duration string and extracts age information
+ * @param {string} durationString - ISO 8601 duration format (e.g., "P86Y", "P25Y6M15D")
+ * @returns {Object} Object containing age information and parsing details
+ */
+const parseEstimatedAge = (durationString) => {
+  // Handle empty, null, or invalid inputs
+  if (!durationString || durationString === '' || durationString === 'P' || durationString === 'PT') {
+    return {
+      age: null,
+      isValid: false,
+      error: 'Unknown or invalid duration'
     };
+  }
+
+  // Check if it starts with P (duration designator)
+  if (!durationString.startsWith('P')) {
+    return {
+      age: null,
+      isValid: false,
+      error: 'Duration must start with P'
+    };
+  }
+
+  try {
+    // Remove the P at the beginning
+    const duration = durationString.substring(1);
+    
+    // Split by T to separate date and time components
+    const [datePart, timePart] = duration.split('T');
+    
+    // Parse date components
+    const dateRegex = /(\d+)([YMWD])/g;
+    let match;
+    let years = 0;
+    let months = 0;
+    let weeks = 0;
+    let days = 0;
+    
+    // Extract date components
+    while ((match = dateRegex.exec(datePart)) !== null) {
+      const value = parseInt(match[1]);
+      const unit = match[2];
+      
+      switch (unit) {
+        case 'Y':
+          years = value;
+          break;
+        case 'M':
+          months = value;
+          break;
+        case 'W':
+          weeks = value;
+          break;
+        case 'D':
+          days = value;
+          break;
+      }
+    }
+    
+    // Parse time components if present
+    let hours = 0;
+    let minutes = 0;
+    let seconds = 0;
+    
+    if (timePart) {
+      const timeRegex = /(\d+)([HMS])/g;
+      while ((match = timeRegex.exec(timePart)) !== null) {
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        
+        switch (unit) {
+          case 'H':
+            hours = value;
+            break;
+          case 'M':
+            minutes = value;
+            break;
+          case 'S':
+            seconds = value;
+            break;
+        }
+      }
+    }
+    
+    // Calculate total age in years (approximation)
+    const totalYears = years + 
+                      (months / 12) + 
+                      (weeks / 52.14) + 
+                      (days / 365.25) + 
+                      (hours / (365.25 * 24)) + 
+                      (minutes / (365.25 * 24 * 60)) + 
+                      (seconds / (365.25 * 24 * 60 * 60));
+    
+    return {
+      age: Math.floor(totalYears), // Return whole years
+      exactAge: totalYears,
+      components: {
+        years,
+        months,
+        weeks,
+        days,
+        hours,
+        minutes,
+        seconds
+      },
+      isValid: true,
+      error: null
+    };
+    
+  } catch (error) {
+    return {
+      age: null,
+      isValid: false,
+      error: 'Failed to parse duration: ' + error.message
+    };
+  }
+};
 
     const downloadErrorCsv = (erroredRows, filePath, originalHeadersx, originalData) => {
         const header = [...originalHeadersx, "stemCode", "stemURI", "code", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
@@ -835,7 +1011,7 @@ const cleanCSVValue = (value) => {
                     result.trackedEntityInstance || '',
                     result.uri,
                     escapeReport(result.report),
-                    result.reject || '',
+                    result.reject,
                     result.error || '',
                     escapeWarning(result.warning)
                 ].join(","); // Join the row with commas

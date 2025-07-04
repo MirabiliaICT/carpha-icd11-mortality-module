@@ -329,7 +329,7 @@ function ICDCodeMapper() {
         mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
 
         const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
-        mappedRecord["age_unit"] = getAgeUnit(timeUnit);
+        mappedRecord["age_unit"] = 'P_YD';
 
 
         return mappedRecord;
