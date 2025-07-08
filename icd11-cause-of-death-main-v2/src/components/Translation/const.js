@@ -2411,10 +2411,10 @@ const TRANSLATIONS = [
   { key: "uniqueField", translation: { en: "Unique Field" } },
   { key: "searchableFields", translation: { en: "Searchable fields" } },
   { key: "help", translation: { en: "Help" } },
-  { key: "userManual", translation: { en: "User Manual" } },
+  { key: "userManual", translation: { en: "Mortality Application User Manual" } },
   {
     key: "causeOfDeathVersion",
-    translation: { en: "Cause of Death App (version 1.0.1)" }
+    translation: { en: "CARPHA Mortality App (version 2.0.1)" }
   },
   { key: "appFeatures", translation: { en: "App features" } },
   { key: "installation", translation: { en: "Installation" } },
