@@ -7,11 +7,11 @@
     }
   },
   "appType": "APP",
-  "name": "ICD-11 Cause of Death",
-  "version": "2.0.0",
-  "description": "Cause of Death",
+  "name": "CARPHA Mortality App",
+  "version": "2.0.1",
+  "description": "CARPHA Mortality App",
   "developer": {
-    "name": "HISPVN Team"
+    "name": "HISPVN Team and customised by Mirabilia Limited"
   },
   "icons": {
     "16": "icon.png",

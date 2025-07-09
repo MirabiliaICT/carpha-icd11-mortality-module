@@ -170,7 +170,7 @@ function ICDCodeMapper() {
             icd11Code: item.icd11Code,
             icd10Title: item.icd10Title,
             icd11Title: item.icd11Title,
-            icd11Chapter: item.icd11Chapter,
+            // icd11Chapter: item.icd11Chapter,
           };
         }
       });
@@ -187,7 +187,7 @@ function ICDCodeMapper() {
           if (!icd10Code || icd10Code === "NULL" || icd10Code === "NUL" || icd10Code === "NIL") {
             mappedRecord[`${column}_icd11`] = "";
             mappedRecord[`${column}_icd11_title`] = "";
-            mappedRecord[`${column}_icd11_chapter`] = "";
+            // mappedRecord[`${column}_icd11_chapter`] = "";
 
           } else {
             let mapping = icd10ToIcd11Map[icd10Code];
@@ -209,12 +209,12 @@ function ICDCodeMapper() {
             if (mapping) {
               mappedRecord[`${column}_icd11`] = mapping.icd11Code;
               mappedRecord[`${column}_icd11_title`] = mapping.icd11Title ? mapping.icd11Title.replace(/,/g, '.') : '';;
-              mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
+              // mappedRecord[`${column}_icd11_chapter`] = mapping.icd11Chapter ? mapping.icd11Chapter.replace(/,/g, '.') : '';
 
             } else {
               mappedRecord[`${column}_icd11`] = "Not Found";
               mappedRecord[`${column}_icd11_title`] = "Not Found";
-              mappedRecord[`icd11_chapter`] = "Not Found";
+              // mappedRecord[`icd11_chapter`] = "Not Found";
             }
           }
         });
@@ -304,7 +304,7 @@ function ICDCodeMapper() {
         const birthYearDOB = mappedRecord["nu_birth_year"] ? String(mappedRecord["nu_birth_year"]) : "";
         const birthMonthDOB = mappedRecord["nu_birth_month"] ? String(mappedRecord["nu_birth_month"]).padStart(2, "0") : "";
         const birthDayDOB = mappedRecord["nu_birth_day"] ? String(mappedRecord["nu_birth_day"]).padStart(2, "0") : "";
-        mappedRecord["dob"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}/${birthMonthDOB}/${birthDayDOB}` : "";
+        mappedRecord["dob"] = birthYearDOB && birthMonthDOB && birthDayDOB ? `${birthYearDOB}-${birthMonthDOB}-${birthDayDOB}` : "";
 
         const deathYearDOD = mappedRecord["nu_death_year"] ? String(mappedRecord["nu_death_year"]) : "";
         const deathMonthDOD = mappedRecord["nu_death_month"] ? String(mappedRecord["nu_death_month"]).padStart(2, "0") : "";
@@ -328,9 +328,8 @@ function ICDCodeMapper() {
         mappedRecord["estimated_age"] = record["nu_age"] || "";
         mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
 
-        const timeUnit = record["ds_time_unit_en"]?.toLowerCase()?.trim();
-        mappedRecord["age_unit"] = getAgeUnit(timeUnit);
-
+        const timeUnit = record["co_time_unit"]?.toLowerCase()?.trim();
+        mappedRecord["age_unit"] = getAgeUnitDirect(timeUnit);
 
         return mappedRecord;
       });
@@ -359,28 +358,18 @@ function ICDCodeMapper() {
     return /[",]/.test(str) ? `"${str}"` : str;
   };
 
-
-  function getAgeUnit(timeUnit) {
+function getAgeUnitDirect(timeUnit) {
     if (!timeUnit) return "";
-
-    const unitMap = {
-      'years': 'P_YD',
-      'months': 'P_M',
-      'days': 'P_D',
-      'hours': 'PT_H',
-      'minutes': 'PT_M',
-      'year': 'P_YD',
-      'month': 'P_M',
-      'day': 'P_D',
-      'hour': 'PT_H',
-      'minute': 'PT_M',
-      // Add more mappings as needed
+    
+    const directMap = {
+        '3': 'P_YD',    // year
+        '2': 'P_M',     // month
+        '1': 'P_D',     // day
+        '0': ''         // unknown
     };
-
-    return unitMap[timeUnit] || "";
-  }
-
-
+    
+    return directMap[timeUnit.toString().trim()] || "";
+}
 
   // Generate CSV content for download with proper column ordering
   const generateCSV = () => {
@@ -398,8 +387,8 @@ function ICDCodeMapper() {
           columnIndex + 1,
           0,
           `${column}_icd11`,
-          `${column}_icd11_title`,
-          `${column}_icd11_chapter`
+          `${column}_icd11_title`
+          // `${column}_icd11_chapter`
         );
       }
     });
