@@ -290,7 +290,7 @@ const ControlBar = ({
         <Divider />
         <DialogContent>
           <div>
-            <strong>CARPHA Mortality Module</strong> <i>(version 2.0.0)</i>
+            <strong>CARPHA Mortality Module</strong> <i>(version 2.0.1)</i>
           </div>
           <div>
             Developed of HISP Vietnam in collaboration with University of Oslo
@@ -339,8 +339,10 @@ const ControlBar = ({
           <div className="help-container">
             <Slide direction="right" in={!doc} mountOnEnter unmountOnExit>
               <div className="help-homepage">
-                <div className="help-title">{t("userManual")}</div>
-                <div className="help-subtitle">{t("causeOfDeathVersion")}</div>
+                {/* <div className="help-title">{t("userManual")}</div> */}
+                <div className="help-title">Mortality Application User Manual</div>
+                {/* <div className="help-subtitle">{t("causeOfDeathVersion")}</div> */}
+                <div className="help-subtitle">CARPHA Mortality App (version 2.0.1)</div>
                 <br />
                 <br />
                 <br />
@@ -351,7 +353,8 @@ const ControlBar = ({
                       setDoc({
                         label: "dataentry",
                         type: "googleDoc",
-                        url: "https://docs.google.com/document/d/e/2PACX-1vT2EbDPO-O-iLc-at1THnLzKTeYAiH1SAimzBvJNXOg3zL6fBupvT1ByPZ0N51uDH95xLVF54CjnI4D/pub?embedded=true",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vT2EbDPO-O-iLc-at1THnLzKTeYAiH1SAimzBvJNXOg3zL6fBupvT1ByPZ0N51uDH95xLVF54CjnI4D/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
                       });
                     }}
                   >
@@ -362,7 +365,8 @@ const ControlBar = ({
                       setDoc({
                         label: "anacod",
                         type: "googleDoc",
-                        url: "https://docs.google.com/document/d/e/2PACX-1vQpE5KDQQ8VdTVC_qbcwTTcZmrOX3hDx_L3tApw9yKGBVfZwIBWcHEluA1kl1bKzPhLSnEyZkOdjZLn/pub?embedded=true",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vQpE5KDQQ8VdTVC_qbcwTTcZmrOX3hDx_L3tApw9yKGBVfZwIBWcHEluA1kl1bKzPhLSnEyZkOdjZLn/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
                       });
                     }}
                   >
@@ -373,13 +377,14 @@ const ControlBar = ({
                       setDoc({
                         label: "dashboard",
                         type: "googleDoc",
-                        url: "https://docs.google.com/document/d/e/2PACX-1vQfDy60msYBy8k3UgqRHaDxe72tfrY6sLw2ggxGClCpnDaV-YzWYLajt9f4ZlqfZnTabKjlYxVKfct4/pub?embedded=true",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vQfDy60msYBy8k3UgqRHaDxe72tfrY6sLw2ggxGClCpnDaV-YzWYLajt9f4ZlqfZnTabKjlYxVKfct4/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
                       });
                     }}
                   >
                     {t("dashboard")}
                   </li>
-                  <li
+                  {/* <li
                     onClick={() => {
                       setDoc({
                         label: "translation",
@@ -389,19 +394,46 @@ const ControlBar = ({
                     }}
                   >
                     {t("translation")}
-                  </li>
+                  </li> */}
                   <li
                     onClick={() => {
                       setDoc({
                         label: "administration",
                         type: "googleDoc",
-                        url: "https://docs.google.com/document/d/e/2PACX-1vSLEQHeu-PUH4qZBptfwR7Y1h1VX53iYBVC5ax2G9qe7EI4jQY5aACC2I6lsN6zOOhlHIxisCcCllsv/pub?embedded=true",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vSLEQHeu-PUH4qZBptfwR7Y1h1VX53iYBVC5ax2G9qe7EI4jQY5aACC2I6lsN6zOOhlHIxisCcCllsv/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
                       });
                     }}
                   >
                     {t("administration")}
                   </li>
                   <li
+                    onClick={() => {
+                      setDoc({
+                        label: "importData",
+                        type: "googleDoc",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vSLEQHeu-PUH4qZBptfwR7Y1h1VX53iYBVC5ax2G9qe7EI4jQY5aACC2I6lsN6zOOhlHIxisCcCllsv/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
+                      });
+                    }}
+                  >
+                    {/* {t("administration")} */}
+                    importData
+                  </li>
+                  <li
+                    onClick={() => {
+                      setDoc({
+                        label: "conversionModule",
+                        type: "googleDoc",
+                        // url: "https://docs.google.com/document/d/e/2PACX-1vSLEQHeu-PUH4qZBptfwR7Y1h1VX53iYBVC5ax2G9qe7EI4jQY5aACC2I6lsN6zOOhlHIxisCcCllsv/pub?embedded=true",
+                        url: "https://docs.google.com/document/d/1Pgd0vj9yeKbRT_jKblSvrnhAHLpgFR-rCYfqq2OzCMA/edit?tab=t.0",
+                      });
+                    }}
+                  >
+                    {/* {t("administration")} */}
+                    conversionModule
+                  </li>
+                  {/* <li
                     onClick={() => {
                       setDoc({
                         label: "installation",
@@ -411,7 +443,7 @@ const ControlBar = ({
                     }}
                   >
                     {t("installation")}
-                  </li>
+                  </li> */}
                 </ul>
               </div>
             </Slide>

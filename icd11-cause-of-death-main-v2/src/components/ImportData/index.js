@@ -717,6 +717,7 @@ const parseEstimatedAge = (durationString) => {
         try {
             const content = e.target.result;
             let parsedData = [];
+            let originalCsvData = []; // Array to store original CSV data for each record
             let headers = [];
             let orgUnitID = selectedOrgUnit;
 
@@ -755,6 +756,16 @@ const parseEstimatedAge = (durationString) => {
                     // Process data rows (skip header row)
                     for (let i = 1; i < parsedCSV.length; i++) {
                         const values = parsedCSV[i];
+                        
+                        // Store original CSV data for this record
+                        const originalRecordData = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            const headerName = headers[j];
+                            const value = values[j] ? cleanCSVValue(values[j]) : "";
+                            originalRecordData[headerName] = value;
+                        }
+                        originalCsvData.push(originalRecordData);
+                        
                         const dataValues = [];
                         const attributeValues = [];
 
@@ -887,6 +898,7 @@ const parseEstimatedAge = (durationString) => {
 
             setDhisFileData({
                 content: parsedData,
+                originalCsvData: originalCsvData, // Add the original CSV data array
                 fileName: file.name,
                 type: file.type,
                 headers: headers,
@@ -982,38 +994,35 @@ const cleanCSVValue = (value) => {
 
     const writeDhisCsv = (processedData, filePath, originalHeaders, originalData, erroredRows) => {
         // Combine the original headers with the DHIS result headers
-        const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
+        const header = [...originalHeaders, "Status", "Message", "TEI_ID", "Enrollment_ID", "Event_ID"].map(header => header.trim());
 
-        // Escape special characters in the report field
-        const escapeReport = (report) => {
-            if (!report) return '';
-            report = report.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${report}"`; // Wrap the report in double quotes to handle commas
-        };
-
-        // Escape special characters in the report field
-        const escapeWarning = (warning) => {
-            if (!warning) return '';
-            warning = warning.replace(/\n/g, "\\n"); // Replace newlines with a placeholder
-            return `"${warning}"`; // Wrap the report in double quotes to handle commas
+        // Escape special characters in fields
+        const escapeField = (field) => {
+            if (!field) return '';
+            const fieldStr = String(field);
+            const escaped = fieldStr.replace(/\n/g, "\\n").replace(/"/g, '""');
+            return `"${escaped}"`;
         };
 
         // Create CSV content
         const csvContent = [
             header.join(","), // Header row
             ...processedData.map((result, index) => {
-                const originalRow = originalData[index];
+                // Get the original row data from the originalCsvData array
+                const originalRow = originalData[index] || {};
+                
                 return [
-                    ...originalHeaders.map(header => originalRow[header] || ''), // Original row values
-                    result.stemCode,
-                    result.stemURI,
-                    result.code,
-                    result.trackedEntityInstance || '',
-                    result.uri,
-                    escapeReport(result.report),
-                    result.reject,
-                    result.error || '',
-                    escapeWarning(result.warning)
+                    // Original row values with proper escaping
+                    ...originalHeaders.map(header => {
+                        const value = originalRow[header] || originalRow[header.trim()] || '';
+                        return escapeField(value);
+                    }),
+                    // DHIS processing results
+                    escapeField(result.status),
+                    escapeField(result.message),
+                    escapeField(result.trackedEntityInstance),
+                    escapeField(result.enrollment),
+                    escapeField(result.event)
                 ].join(","); // Join the row with commas
             })
         ].join("\n"); // Join all rows with newlines
@@ -1030,34 +1039,34 @@ const cleanCSVValue = (value) => {
     };
 
     const downloadDhisErrorCsv = (erroredRows, filePath, originalHeaders, originalData) => {
-        const header = [...originalHeaders, "stemCode", "stemURI", "code", "trackedEntityInstance", "uri", "report", "reject", "error", "warning"].map(header => header.trim());
+        const header = [...originalHeaders, "Record_Index", "Error_Message", "Timestamp", "Error_Type", "Failed_At_Step"].map(header => header.trim());
 
-        const escapeReport = (report) => {
-            if (!report) return '';
-            report = report.replace(/\n/g, "\\n");
-            return `"${report}"`;
+        const escapeField = (field) => {
+            if (!field) return '';
+            const fieldStr = String(field);
+            const escaped = fieldStr.replace(/\n/g, "\\n").replace(/"/g, '""');
+            return `"${escaped}"`;
         };
 
         const csvContent = [
             header.join(","),
             ...erroredRows.map((errorItem, index) => {
-                // Find the original row data that corresponds to this error
-                const originalRowIndex = originalData.findIndex(row =>
-                    JSON.stringify(row) === JSON.stringify(errorItem.data?.originalRow)
-                );
-                const originalRow = originalRowIndex >= 0 ? originalData[originalRowIndex] : {};
+                // Get the original row data from the originalCsvData array using recordIndex
+                const recordIndex = errorItem.recordIndex - 1; // Convert to 0-based index
+                const originalRow = originalData[recordIndex] || {};
 
                 return [
-                    ...originalHeaders.map(header => originalRow[header] || ''),
-                    errorItem.stemCode,
-                    errorItem.stemURI,
-                    errorItem.code,
-                    errorItem.trackedEntityInstance || '',
-                    errorItem.uri,
-                    escapeReport(errorItem.report), // Escaped report field
-                    errorItem.reject,
-                    errorItem.error,
-                    errorItem.warning
+                    // Original row values with proper escaping
+                    ...originalHeaders.map(header => {
+                        const value = originalRow[header] || originalRow[header.trim()] || '';
+                        return escapeField(value);
+                    }),
+                    // Error information
+                    errorItem.recordIndex || index + 1,
+                    escapeField(errorItem.error),
+                    errorItem.timestamp || new Date().toISOString(),
+                    'API_Error',
+                    escapeField(errorItem.failedAtStep || 'Unknown')
                 ].join(",");
             })
         ].join("\n");
@@ -1072,14 +1081,14 @@ const cleanCSVValue = (value) => {
         document.body.removeChild(link);
     };
 
-    // Updated beginDhisCodProcessing function
+    // Optimized beginDhisCodProcessing function with batch processing and error handling
     const beginDhisCodProcessing = async () => {
         if (!dhisFileData || !dhisFileData.content) {
             console.log("There is no data in the file ---------Error!!!");
             return;
         }
 
-        const { content, headers } = dhisFileData;
+        const { content, headers, originalCsvData } = dhisFileData;
 
         setDhisProcessingData(prev => ({
             ...prev,
@@ -1099,100 +1108,144 @@ const cleanCSVValue = (value) => {
         try {
             let processedCount = 0;
             const totalRows = content.length;
+            const programid = "ogrOUKoSaWA";
 
-            for (const data of content) {
-                console.log("Generated Individual Data :", data);
+            // Fetch program metadata once at the beginning
+            let programMetadata;
+            try {
+                programMetadata = await metadataApi.getProgramMetadata(programid);
+                console.log("Program Metadata API call successful:", programMetadata);
+            } catch (apiError) {
+                console.error("Failed to fetch program metadata from API:", apiError);
+                console.log("Using fallback program metadata structure");
+                programMetadata = {
+                    id: programid,
+                    trackedEntityAttributes: [],
+                    programStages: []
+                };
+            }
 
-                const programid = "ogrOUKoSaWA";
-                let programMetadata;
+            const safeProgramMetadata = {
+                id: programMetadata?.id || programid,
+                trackedEntityAttributes: programMetadata?.trackedEntityAttributes || [],
+                programStages: programMetadata?.programStages || []
+            };
+
+            // Process records with optimized error handling and timeout
+            for (let i = 0; i < content.length; i++) {
+                const data = content[i];
+                console.log(`Processing record ${i + 1}/${totalRows}:`, data);
 
                 try {
-                    programMetadata = await metadataApi.getProgramMetadata(programid);
-                    console.log("Program Metadata API call successful:", programMetadata);
-                } catch (apiError) {
-                    console.error("Failed to fetch program metadata from API:", apiError);
-                    console.log("Using fallback program metadata structure");
-
-                    programMetadata = {
-                        id: programid,
-                        trackedEntityAttributes: [],
-                        programStages: []
-                    };
-                }
-
-                try {
-                    if (!programMetadata) {
-                        throw new Error('Program metadata not found');
-                    }
-
-                    console.log("Program Metadata received:", programMetadata);
-                    console.log("Program Metadata keys:", Object.keys(programMetadata));
-
-                    const safeProgramMetadata = {
-                        id: programMetadata.id || programid,
-                        trackedEntityAttributes: programMetadata.trackedEntityAttributes || [],
-                        programStages: programMetadata.programStages || []
-                    };
-
-                    if (!safeProgramMetadata.trackedEntityAttributes || safeProgramMetadata.trackedEntityAttributes.length === 0) {
-                        console.warn("No trackedEntityAttributes found, using empty array");
-                    }
-
-                    if (!safeProgramMetadata.programStages || safeProgramMetadata.programStages.length === 0) {
-                        console.warn("No programStages found, using empty array");
-                    }
-
+                    // Generate payload
                     const { trackedEntityInstance, enrollment, events } = generateDhis2Payloadx(data, safeProgramMetadata);
 
-                    console.log("currentEventscurrentEvents" + trackedEntityInstance);
-                    console.log("enrollmentenrollment" + enrollment);
-                    console.log("eventevent" + events);
+                    // Process with timeout and error handling
+                    const processRecord = async () => {
+                        try {
+                            // Push tracked entity instance with timeout
+                            const teiResponse = await Promise.race([
+                                dataApi.pushTrackedEntityInstance(data.trackedEntityInstance, safeProgramMetadata.id),
+                                new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('TEI API timeout')), 30000)
+                                )
+                            ]);
 
-                    await dataApi.pushTrackedEntityInstance(
-                        data.trackedEntityInstance,
-                        safeProgramMetadata.id
-                    );
+                            // Check if response is not 200
+                            console.log("TEI API response:", teiResponse);
+                            console.log("TEI API response status:", teiResponse.httpStatusCode);
+                            if (teiResponse && teiResponse.httpStatusCode && teiResponse.httpStatusCode !== 200) {
+                                throw new Error(`TEI API returned status ${teiResponse.httpStatusCode}: ${teiResponse.message || 'Unknown error'}`);
+                            }
 
-                    await dataApi.pushEnrollment(
-                        data.enrollment,
-                        safeProgramMetadata.id
-                    );
+                            // Push enrollment with timeout
+                            const enrollmentResponse = await Promise.race([
+                                dataApi.pushEnrollment(data.enrollment, safeProgramMetadata.id),
+                                new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Enrollment API timeout')), 30000)
+                                )
+                            ]);
 
-                    await dataApi.pushEvents({ events: [data.event] });
-                    console.log("DHIS: Successfully processed row");
+                            // Check if response is not 201 (correct success code for enrollment)
+                            console.log("Enrollment API response:", enrollmentResponse);
+                            console.log("Enrollment API response status:", enrollmentResponse.httpStatusCode);
+                            if (enrollmentResponse && enrollmentResponse.httpStatusCode && enrollmentResponse.httpStatusCode !== 201) {
+                                throw new Error(`Enrollment API returned status ${enrollmentResponse.httpStatusCode}: ${enrollmentResponse.message || 'Unknown error'}`);
+                            }
 
-                    // Add to processed data for CSV
-                    processedData.push({
-                        status: 'Success',
-                        message: 'Successfully processed',
-                        trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
-                        enrollment: data.enrollment?.enrollment || '',
-                        event: data.event?.event || '',
-                        originalRow: content[processedCount] // Keep reference to original data
-                    });
+                            // Push events with timeout
+                            const eventsResponse = await Promise.race([
+                                dataApi.pushEvents({ events: [data.event] }),
+                                new Promise((_, reject) => 
+                                    setTimeout(() => reject(new Error('Events API timeout')), 30000)
+                                )
+                            ]);
+
+                            // Check if response is not 200
+                            console.log("EVENT API response:", eventsResponse);
+                            console.log("EVENT API response status:", eventsResponse.httpStatusCode);
+                            if (eventsResponse && eventsResponse.httpStatusCode && eventsResponse.httpStatusCode !== 200) {
+                                throw new Error(`Events API returned status ${eventsResponse.httpStatusCode}: ${eventsResponse.message || 'Unknown error'}`);
+                            }
+
+                            return { success: true };
+                        } catch (error) {
+                            // Determine which step failed based on error message
+                            let failedAtStep = 'Unknown';
+                            if (error.message.includes('TEI API')) {
+                                failedAtStep = 'Tracked Entity Instance Creation';
+                            } else if (error.message.includes('Enrollment API')) {
+                                failedAtStep = 'Enrollment Creation';
+                            } else if (error.message.includes('Events API')) {
+                                failedAtStep = 'Event Creation';
+                            }
+                            
+                            return { success: false, error: error.message, failedAtStep };
+                        }
+                    };
+
+                    const result = await processRecord();
+
+                    if (result.success) {
+                        console.log(`DHIS: Successfully processed row ${i + 1}`);
+                        
+                        // Add to processed data for CSV
+                        processedData.push({
+                            status: 'Success',
+                            message: 'Successfully processed',
+                            trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
+                            enrollment: data.enrollment?.enrollment || '',
+                            event: data.event?.event || '',
+                            originalRow: data // Keep reference to original data
+                        });
+                    } else {
+                        // Create error object with failedAtStep information
+                        const errorWithStep = new Error(result.error);
+                        errorWithStep.failedAtStep = result.failedAtStep;
+                        throw errorWithStep;
+                    }
 
                 } catch (error) {
-                    console.error(`DHIS Error processing data for TEI: ${data.trackedEntityInstance}`, error);
-                    console.error("Full error details:", error);
+                    console.error(`DHIS Error processing data for record ${i + 1}:`, error);
 
-                    // Add to errored rows
-                    erroredRows.push({
+                    // Add to errored rows with detailed error information
+                    const errorRecord = {
                         data: {
                             ...data,
-                            originalRow: content[processedCount]
+                            originalRow: data
                         },
                         error: error.message,
-                        timestamp: new Date().toISOString()
-                    });
+                        timestamp: new Date().toISOString(),
+                        recordIndex: i + 1,
+                        failedAtStep: error.failedAtStep || 'Unknown'
+                    };
+
+                    erroredRows.push(errorRecord);
 
                     setDhisProcessingData(prev => ({
                         ...prev,
                         errorCount: prev.errorCount + 1,
-                        erroredRows: [...prev.erroredRows, {
-                            data: data,
-                            error: error.message,
-                            timestamp: new Date().toISOString()
-                        }]
+                        erroredRows: [...prev.erroredRows, errorRecord]
                     }));
                 }
 
@@ -1203,20 +1256,26 @@ const cleanCSVValue = (value) => {
                     ...prev,
                     processedRows: processedCount
                 }));
+
+                // Add small delay between requests to prevent overwhelming the server
+                if (i < content.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
 
             // Generate CSV files after processing is complete
-            console.log("writeDhisCsv----", headers);
-            console.log("writeDhisCsv----", content);
+            console.log("Processing complete. Generating CSV files...");
 
             // Download successful results
             if (processedData.length > 0) {
-                writeDhisCsv(processedData, `dhis_import_results_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content, erroredRows);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                writeDhisCsv(processedData, `dhis_import_results_${timestamp}.csv`, headers, originalCsvData, erroredRows);
             }
 
             // Download errors if any
             if (erroredRows.length > 0) {
-                downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${Math.random().toString(36).substr(2, 9)}.csv`, headers, content);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${timestamp}.csv`, headers, originalCsvData);
             }
 
             // Clear file input and data
@@ -1226,6 +1285,7 @@ const cleanCSVValue = (value) => {
             setDhisFileData(null);
 
         } catch (error) {
+            console.error("Fatal error in DHIS processing:", error);
             setDhisProcessingData(prev => ({
                 ...prev,
                 error: error.message

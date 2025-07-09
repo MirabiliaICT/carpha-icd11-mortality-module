@@ -326,6 +326,10 @@ function ICDCodeMapper() {
 
         // mappedRecord["sex"] = record["ds_sex_en"] ? String(record["ds_sex_en"]).toUpperCase() : ""; 
         mappedRecord["estimated_age"] = record["nu_age"] || "";
+        if (mappedRecord["co_underlying_cause_icd11"]) {
+          mappedRecord["co_underlying_cause_icd11"] =
+            mappedRecord["co_underlying_cause_icd11"].split("/")[0];
+        }
         mappedRecord["co_underlying_cause_icd11_cod"] = mappedRecord["co_underlying_cause_icd11"] || "";
 
         const timeUnit = record["co_time_unit"]?.toLowerCase()?.trim();
