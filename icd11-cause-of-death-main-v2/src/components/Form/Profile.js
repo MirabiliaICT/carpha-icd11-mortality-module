@@ -458,27 +458,97 @@ const Profile = ({
   //   );
   // };
 
-  const populateInputField = (attribute) => {
+//   const populateInputField = (attribute) => {
+//   if (!attribute) {
+//     console.warn("populateInputField called with undefined attribute");
+//     return null;
+//   }
+
+//   const tea = getTeaMetadata(attribute);
+//   if (!tea) {
+//     console.warn(`No metadata found for attribute: ${attribute}`);
+//     return null;
+//   }
+
+//   const value = getTeaValue(attribute);
+//   console.log(`${tea} Form name ----------------------------------`);
+
+//   return (
+//     <InputField
+//       value={value}
+//       valueType={tea.valueType}  
+//       // label={tea.displayFormName}
+//       label={tea.displayFormName === "Sex" ? "Gender" : tea.displayFormName }
+//       valueSet={tea.valueSet}
+//       change={(value) => mutateAttribute(tea.id, value)}
+//       disabled={attribute === formMapping.attributes["system_id"] || enrollmentStatus === "COMPLETED"}
+//       mandatory={tea.compulsory}
+//     />
+//   );
+// };
+
+const populateInputField = (attribute) => {
   if (!attribute) {
     console.warn("populateInputField called with undefined attribute");
     return null;
   }
-
+  
   const tea = getTeaMetadata(attribute);
   if (!tea) {
     console.warn(`No metadata found for attribute: ${attribute}`);
     return null;
   }
-
+  
   const value = getTeaValue(attribute);
   console.log(`${tea} Form name ----------------------------------`);
-
+  
+  // Manipulate valueSet to add "Unknown" for Male/Female options
+  const getModifiedValueSet = () => {
+    if (!tea.valueSet || !Array.isArray(tea.valueSet)) {
+      return tea.valueSet;
+    }
+    
+    // Check if valueSet contains both "Male" and "Female"
+    const hasMale = tea.valueSet.some(option => 
+      (typeof option === 'string' && option.toLowerCase() === 'male') ||
+      (option.value && option.value.toLowerCase() === 'male') ||
+      (option.displayName && option.displayName.toLowerCase() === 'male')
+    );
+    
+    const hasFemale = tea.valueSet.some(option => 
+      (typeof option === 'string' && option.toLowerCase() === 'female') ||
+      (option.value && option.value.toLowerCase() === 'female') ||
+      (option.displayName && option.displayName.toLowerCase() === 'female')
+    );
+    
+    if (hasMale && hasFemale) {
+      // Check if "Unknown" already exists
+      const hasUnknown = tea.valueSet.some(option => 
+        (typeof option === 'string' && option.toLowerCase() === 'unknown') ||
+        (option.value && option.value.toLowerCase() === 'unknown') ||
+        (option.displayName && option.displayName.toLowerCase() === 'unknown')
+      );
+      
+      if (!hasUnknown) {
+        // Add "Unknown" option - adjust format based on your valueSet structure
+        if (typeof tea.valueSet[0] === 'string') {
+          return [...tea.valueSet, 'Unknown'];
+        } else {
+          // Assuming objects with value/displayName structure
+          return [...tea.valueSet, { value: 'Unknown', displayName: 'Unknown' }];
+        }
+      }
+    }
+    
+    return tea.valueSet;
+  };
+  
   return (
     <InputField
       value={value}
       valueType={tea.valueType}
-      label={tea.displayFormName}
-      valueSet={tea.valueSet}
+      label={tea.displayFormName === "Sex" ? "Gender" : tea.displayFormName}
+      valueSet={getModifiedValueSet()}
       change={(value) => mutateAttribute(tea.id, value)}
       disabled={attribute === formMapping.attributes["system_id"] || enrollmentStatus === "COMPLETED"}
       mandatory={tea.compulsory}
@@ -614,6 +684,11 @@ const Profile = ({
                 mutateAttribute(ageUnit.id, value);
                 if (value === "P_YD" && getTeaValue(estimatedAge.id) !== "") {
                   mutateAttribute(age.id, getTeaValue(estimatedAge.id));
+                }
+                // Auto-populate Age (years) with 999 if Age Unit is Unknown (P_T)
+                if (value === "P_T") {
+                  mutateAttribute(age.id, "999");
+                  mutateAttribute(estimatedAge.id, "999"); // Also set Estimated Age to 999
                 }
               }}
             />

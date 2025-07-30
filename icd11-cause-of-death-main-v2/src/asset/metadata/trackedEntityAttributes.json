@@ -242,7 +242,7 @@
     {
       "id": "revZcilpJvK",
       "name": "Date of birth",
-      "shortName": "Date of birth",
+      "shortName": "DateofBirth",
       "aggregationType": "NONE",
       "displayInListNoProgram": false,
       "publicAccess": "r-------",
@@ -389,7 +389,7 @@
     {
       "id": "j1yPic5cJUo",
       "name": "Family name",
-      "shortName": "Family name",
+      "shortName": "FamilyName",
       "aggregationType": "NONE",
       "displayInListNoProgram": false,
       "publicAccess": "r-------",
@@ -471,7 +471,7 @@
     {
       "id": "lDKfAjYyQcN",
       "name": "Given name",
-      "shortName": "Given name",
+      "shortName": "GivenName",
       "aggregationType": "NONE",
       "displayInListNoProgram": false,
       "publicAccess": "r-------",
@@ -538,7 +538,7 @@
     {
       "id": "F6qFXT44qay",
       "name": "Sex",
-      "shortName": "Sex",
+      "shortName": "sex_",
       "aggregationType": "NONE",
       "displayInListNoProgram": false,
       "publicAccess": "r-------",

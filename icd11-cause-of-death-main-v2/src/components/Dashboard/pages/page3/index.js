@@ -31,7 +31,7 @@ const page3 = (t) => {
             i: `3.${index + 1}`,
             children: [
               generateChildChart("line", {
-                title: `${t("numberOfDeathBySexAndAge")} - ${baseTitle}`,
+                title: `${"Number of deaths by gender and age"} - ${baseTitle}`,
                 dataLabels: SEXES,
                 dataSets: EXPANDED_AGE_RANGES.map((name) => ({
                   name,

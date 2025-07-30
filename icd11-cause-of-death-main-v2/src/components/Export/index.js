@@ -224,7 +224,7 @@ const Export = ({ route, orgUnits }) => {
               placeholder="Select a country code"
               options={countryCodes.map((countryCode) => ({
                 value: countryCode.code,
-                label: `${countryCode.code} | ${countryCode.country}`,
+                label: `${countryCode.country} | ${countryCode.code}`,
               }))}
               onChange={(value) => {
                 setCountryCode(countryCodes.find(({ code }) => code === value));

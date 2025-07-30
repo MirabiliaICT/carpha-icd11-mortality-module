@@ -11,8 +11,10 @@ const page6 = (t) => {
   const TITLES = [
     t("numberOfMalariaDeathsByMonth"),
     t("numberOfMalariaDeathsPlaceOfDeath"),
-    t("numberOfMalariaDeathsBySex"),
-    t("numberOfMalariaDeathsBySexAndDetailedAgeGroup"),
+    "Number of malaria deaths by gender",
+    "Number of malaria deaths by gender and detailed age-group",
+    // t("numberOfMalariaDeathsBySex"),
+    // t("numberOfMalariaDeathsBySexAndDetailedAgeGroup"),
     t("numberOfMalariaDeathsAndPercentOfAllMalariaDeathsByBroadAgeGroup"),
     t("numberOfMalariaDeathsComparedWithOtherCausesOfDeaths"),
   ];

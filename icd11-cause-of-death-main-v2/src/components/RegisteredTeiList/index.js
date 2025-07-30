@@ -239,7 +239,9 @@ const RegisteredTeiList = ({ metadata, data, userRoles, initData, changeRoute })
                     }
                   : null
               }
-              columns={tableData.columns}
+              columns={tableData.columns?.map((col) =>
+                col.title === "Sex" ? { ...col, title: "Gender" } : col
+              )}
               dataSource={tableData.data}
               scroll={{ y: size.height - 200 }}
               loading={loadingTable}

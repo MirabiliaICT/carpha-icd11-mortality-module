@@ -1,9 +1,9 @@
 {
   "trackedEntityTypes": [
     {
-      "code": "Person",
+      "code": "Person_",
       "id": "RQrHOJGKT5H",
-      "name": "Person",
+      "name": "Individual",
       "publicAccess": "r-------",
       "description": "Person",
       "allowAuditLog": false,

@@ -73,7 +73,7 @@ const resources = {
     {
       key: "mortalityByCauseAgeAndSex",
       translation: {
-        en: "Mortality by cause, age and sex",
+        en: "Mortality by cause, age and gender",
         fr: "Mortalité par cause, âge et sexe",
       },
     },
@@ -1045,7 +1045,7 @@ const resources = {
     {
       key: "numberOfDeathBySexAndAge",
       translation: {
-        en: "Number of deaths by sex and age",
+        en: "Number of deaths by gender and age",
         fr: "Nombre de décès selon le sexe et l'âge",
       },
     },
@@ -1296,7 +1296,7 @@ const resources = {
     {
       key: "numberOfMalariaDeathsBySexAndDetailedAgeGroup",
       translation: {
-        en: "Number of malaria deaths by sex and detailed age-group",
+        en: "Number of malaria deaths by gender and detailed age-group",
         fr: "Nombre de décès dus au paludisme par sexe et tranche d'âge détaillée",
       },
     },
@@ -1351,14 +1351,14 @@ const resources = {
     {
       key: "numberOfTuberculosisDeathsBySex",
       translation: {
-        en: "Number of tuberculosis deaths by sex",
+        en: "Number of tuberculosis deaths by gender",
         fr: "Nombre de décès dus à la tuberculose par sexe",
       },
     },
     {
       key: "numberOfTuberculosisDeathsBySexAndDetailedAgeGroup",
       translation: {
-        en: "Number of tuberculosis deaths by sex and detailed age-group",
+        en: "Number of tuberculosis deaths by gender and detailed age-group",
         fr: "Nombre de décès dus à la tuberculose par sexe et tranche d'âge détaillée",
       },
     },
@@ -1414,7 +1414,7 @@ const resources = {
     {
       key: "numberOfAidsDeathsBySexAndDetailedAgeGroup",
       translation: {
-        en: "Number of AIDS deaths by sex and detailed age-group",
+        en: "Number of AIDS deaths by gender and detailed age-group",
         fr: "Nombre de décès dus au SIDA par sexe et tranche d'âge détaillée",
       },
     },
@@ -1471,7 +1471,7 @@ const resources = {
     {
       key: "distributionOfDeathsByTbAidsAndMalariaBySexAndAge",
       translation: {
-        en: "Distribution of deaths by TB, AIDS and malaria by sex and age",
+        en: "Distribution of deaths by TB, AIDS and malaria by gender and age",
         fr: "Répartition des décès par tuberculose, sida et paludisme par sexe et âge",
       },
     },

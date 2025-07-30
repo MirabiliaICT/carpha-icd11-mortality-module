@@ -174,10 +174,24 @@ const Form = ({
                     marginLeft: "3px"
                   }}
 
-                  onClick={async () => {
-                    if ( 
-                      programMetadata.trackedEntityAttributes.filter( ({compulsory}) => compulsory )
-                      .every( ({id}) => currentTei.attributes[id] && currentTei.attributes[id] !== "" )
+                  onClick={async () => {   
+                    console.log(
+                      currentTei.attributes, "currentTei.attributescurrentTei.attributescurrentTei.attributes");   
+                      
+                      const compulsoryFields =
+                        programMetadata.trackedEntityAttributes.filter(
+                          ({ compulsory }) => compulsory
+                        );
+                      console.log("Compulsory fields and their values:");
+                      compulsoryFields.forEach(({ id, name }) => {
+                        console.log(
+                          `${id} (${name}):`,
+                          currentTei.attributes[id]
+                        );
+                      });
+                    if (
+                      programMetadata.trackedEntityAttributes.filter(({ compulsory }) => compulsory)
+                        .every(({ id }) => currentTei.attributes[id] && currentTei.attributes[id] !== "")
                       && currentEnrollment['enrollmentDate'] && currentEnrollment.enrollmentDate !== ""
                       && currentEnrollment['incidentDate'] && currentEnrollment['incidentDate'] !== ""
                     ) {
@@ -305,7 +319,7 @@ const Form = ({
               <Button
                 type="primary" 
                 style={{
-                  width: "110px",
+                  width: "160px",
                   marginLeft: "3px",
                 }}
                 disabled={!certificate}
@@ -314,7 +328,7 @@ const Form = ({
                   setLoading(true);
                 }}
               >
-                Certificate
+                Notification of Death
               </Button>
             </ButtonGroup>
             <ButtonGroup

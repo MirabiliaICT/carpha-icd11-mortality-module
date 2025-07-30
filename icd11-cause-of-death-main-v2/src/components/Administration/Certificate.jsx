@@ -69,7 +69,7 @@ const Certificate = props => {
     }
 
     const handleAddItem = () => {
-        if ( label === "" || selected === {} ) {
+        if ( label === "" || Object.keys(selected).length === 0 ) {
             message.error('ERROR Please enter the label and selected an item.');
         } else {
             const key = open === "Body" ? "info" : "footer";
@@ -234,14 +234,7 @@ const Certificate = props => {
                         </Row>
                     </StepContent>
                 </Step>
-                <Step>
-                    <StepButton onClick={() => setType(1)}>{t("customCertificate")}</StepButton>
-                    <StepContent>
-                        <div className="administration-custom-certificate-container">
-                            <CustomCertificate />
-                        </div>
-                    </StepContent>
-                </Step>
+                {/* Removed custom certificate step to hide it from users */}
             </Stepper>}
             <Modal
                 width={"50%"}
