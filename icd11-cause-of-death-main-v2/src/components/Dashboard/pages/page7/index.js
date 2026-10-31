@@ -11,8 +11,10 @@ const page7 = (t) => {
   const TITLES = [
     t("numberOfTuberculosisDeathsByMonth"),
     t("numberOfTuberculosisDeathsByPlaceOfDeath"),
-    t("numberOfTuberculosisDeathsBySex"),
-    t("numberOfTuberculosisDeathsBySexAndDetailedAgeGroup"),
+    // t("numberOfTuberculosisDeathsBySex"),
+    // t("numberOfTuberculosisDeathsBySexAndDetailedAgeGroup"),
+    "Number of tuberculosis deaths by gender",
+    "Number of tuberculosis deaths by gender and detailed age-group",    
     t(
       "numberOfTuberculosisDeathsAndPercentOfAllTuberculosisDeathsByBroadAgeGroup"
     ),

@@ -23,7 +23,7 @@ const resources = {
       anacodExportExcel: "Anacod Export (Excel)",
       mortalityLevels: "Mortality levels",
       mortalityFromBroadCausesOfDeath: "Mortality from broad causes of death",
-      mortalityByCauseAgeAndSex: "Mortality by cause, age and sex",
+      mortalityByCauseAgeAndSex: "Mortality by cause, age and gender",
       mortalityFromNcds: "Mortality from NCDs",
       mostFrequentCauseOfDeath: "Most frequent cause of death",
       deathsByIcd11Chapter: "Deaths by ICD-11 Chapter",
@@ -256,7 +256,7 @@ const resources = {
       diabetesMellitus: "Diabetes mellitus",
       cardiovascularDiseases: "Cardiovascular diseases",
       respiratoryDiseases: "Respiratory diseases",
-      numberOfDeathBySexAndAge: "Number of deaths by sex and age",
+      numberOfDeathBySexAndAge: "Number of deaths by gender and age",
       numberOfDeathByMonth: "Number of deaths by month",
       pneumonia: "Pneumonia",
       otherDiseasesOfTheDigestiveSystem:
@@ -338,7 +338,7 @@ const resources = {
       numberOfTuberculosisDeaths: "Number of tuberculosis deaths",
       numberOfAidsDeathsByMonth: "Number of AIDS deaths by month",
       numberOfAidsDeathsPlaceOfDeath: "Number of AIDS deaths - place of death",
-      numberOfAidsDeathsBySex: "Number of AIDS deaths by sex",
+      numberOfAidsDeathsBySex: "Number of AIDS deaths by gender",
       numberOfAidsDeathsBySexAndDetailedAgeGroup:
         "Number of AIDS deaths by sex and detailed age-group",
       numberOfAidsDeathsAndPercentOfAllAidsDeathsByBroadAgeGroup:

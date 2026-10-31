@@ -151,21 +151,18 @@ const DeathCertificate = ({
       title={
         <Row className="no-print" gutter={8} justify="end">
           <Col>
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               onClick={() => {
-                if(customCertificateTemplate) {
+                if (customCertificateTemplate) {
                   window.frames["certificate"].focus();
                   window.frames["certificate"].print();
-                }
-                else {
+                } else {
                   window.print();
                 }
               }}
             >
-            {
-              t("print")
-            }
+              {t("print")}
             </Button>
           </Col>
           <Col>
@@ -174,69 +171,74 @@ const DeathCertificate = ({
         </Row>
       }
     >
-    {
-      (customCertificateTemplate) ? <iframe 
+      {customCertificateTemplate ? (
+        <iframe
           // hidden
           id="certificate"
           name="certificate"
           title="Certificate"
           src={pdfURL + "#toolbar=0&navpanes=0&scrollbar=0"}
-          frameBorder="0" 
+          frameBorder="0"
           height={800}
           width={"100%"}
           scrolling="auto"
           type="application/pdf"
-      />
-      :
-      <Space size="large" style={{ width: "100%" }} direction="vertical">
-        <div style={{ position: "relative" }}>
-          <div
-            style={{
-              padding: "4px 8px",
-              position: "absolute",
-              top: "50%",
-              left: 0,
-              transform: "translateY(-50%)",
-            }}
-          >
-            <img src={certificateTemplate.logo} alt="logo" style={{width: "20%"}} />
+        />
+      ) : (
+        <Space size="large" style={{ width: "100%" }} direction="vertical">
+          <div style={{ position: "relative" }}>
+            <div
+              style={{
+                padding: "4px 8px",
+                position: "absolute",
+                top: "50%",
+                left: 0,
+                transform: "translateY(-50%)",
+              }}
+            >
+              <img
+                src={certificateTemplate.logo}
+                alt="logo"
+                style={{ width: "20%" }}
+              />
+            </div>
+            <Typography.Title
+              style={{ marginBottom: 0, textAlign: "center" }}
+              level={2}
+            >
+              {certificateTemplate.title}
+            </Typography.Title>
           </div>
-          <Typography.Title
-            style={{ marginBottom: 0, textAlign: "center" }}
-            level={2}
-          >
-            {certificateTemplate.title}
-          </Typography.Title>
-        </div>
-        <div />
-        {
-          certificateTemplate.info.map( row => 
-            <Row>
+          <div />
+          {certificateTemplate.info.map((row) => (          
+            <Row key={row.id || row.label}>             
+              {/* Added key prop for better React performance */}
               <Col span={8}>
-                <div style={{fontSize: 20}}><strong>{row.label}:</strong></div>
+                <div style={{ fontSize: 20 }}>
+                  <strong>{row.label === "Sex" ? "Gender" : row.label}:</strong>
+                </div>
               </Col>
               <Col span={16}>
-                <div style={{fontSize: 20}}>{getVal_defaultCert(row)}</div>
+                <div style={{ fontSize: 20 }}>{getVal_defaultCert(row)}</div>
               </Col>
             </Row>
-          )
-        }
-        <div />
-        <div />
-        {
-          certificateTemplate.footer.map( row => 
+          ))}
+          <div />
+          <div />
+          {certificateTemplate.footer.map((row) => (
             <Row gutter={8}>
               <Col style={{ textAlign: "right" }} offset={8} span={8}>
-                <div style={{fontSize: 20}}><strong>{row.label}:</strong></div>
+                <div style={{ fontSize: 20 }}>
+                  <strong>{row.label}:</strong>
+                </div>
               </Col>
               <Col style={{ textAlign: "right" }} span={8}>
-                <div style={{fontSize: 20}}>{getVal_defaultCert(row)}</div>
+                <div style={{ fontSize: 20 }}>{getVal_defaultCert(row)}</div>
               </Col>
             </Row>
-          )
-        }
-      </Space>
-    }
+          ))}
+        </Space>
+      )}
     </Modal>
   );
 };

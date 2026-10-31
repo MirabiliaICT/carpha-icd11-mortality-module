@@ -4,7 +4,8 @@ import generateChildChart from "../../utils/generateChildChart";
 const page9 = (t) => {
   const TITLES = [
     t("numberOfDeathsFromTbAidsMalariaAndOtherCausesAgeGroup"),
-    t("distributionOfDeathsByTbAidsAndMalariaBySexAndAge"),
+    // t("distributionOfDeathsByTbAidsAndMalariaBySexAndAge"),
+    "Distribution of deaths by TB, AIDS and malaria by gender and age",
     t(
       "percentageOfDeathsFromTbAidsAndMalariaOutOfAllDeathsFromCommunicableDiseases"
     ),

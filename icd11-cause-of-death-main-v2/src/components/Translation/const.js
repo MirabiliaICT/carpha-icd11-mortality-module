@@ -466,7 +466,7 @@ const TRANSLATIONS = [
     key: "mortalityByCauseAgeAndSex",
     translation: {
       ar: "الوفيات حسب السبب والعمر والجنس",
-      en: "Mortality by cause, age and sex",
+      en: "Mortality by cause, age and gender",
       fr: "Mortalité par cause, âge et sexe"
     }
   },
@@ -1410,7 +1410,7 @@ const TRANSLATIONS = [
     key: "proportionOfDeathFromBroadCausesAll",
     translation: {
       ar: "نسبة الوفيات من أسباب الوفاة الرئيسية (جميع الأجناس ، جميع الأعمار)",
-      en: "Proportion of deaths from broad causes (all sexes, all ages)",
+      en: "Proportion of deaths from broad causes (all genders, all ages)",
       fr: "Proportion de décès de causes générales (tous sexes, tous âges)"
     }
   },
@@ -1870,7 +1870,7 @@ const TRANSLATIONS = [
     key: "numberOfDeathBySexAndAge",
     translation: {
       ar: "عدد الوفيات حسب الجنس والعمر",
-      en: "Number of deaths by sex and age",
+      en: "Number of deaths by gender and age",
       fr: "Nombre de décès selon le sexe et l'âge"
     }
   },
@@ -2170,7 +2170,7 @@ const TRANSLATIONS = [
     key: "numberOfMalariaDeathsBySex",
     translation: {
       ar: "عدد الوفيات الناجمة عن الملاريا حسب الجنس",
-      en: "Number of malaria deaths by sex",
+      en: "Number of malaria deaths by gender",
       fr: "Nombre de décès dus au paludisme par sexe"
     }
   },
@@ -2178,7 +2178,7 @@ const TRANSLATIONS = [
     key: "numberOfMalariaDeathsBySexAndDetailedAgeGroup",
     translation: {
       ar: "عدد الوفيات الناجمة عن الملاريا حسب الجنس والفئات العمرية التفصيلية",
-      en: "Number of malaria deaths by sex and detailed age-group",
+      en: "Number of malaria deaths by gender and detailed age-group",
       fr: "Nombre de décès dus au paludisme par sexe et tranche d'âge détaillée"
     }
   },
@@ -2242,7 +2242,7 @@ const TRANSLATIONS = [
     key: "numberOfTuberculosisDeathsBySex",
     translation: {
       ar: "عدد الوفيات الناجمة عن السل حسب الجنس",
-      en: "Number of tuberculosis deaths by sex",
+      en: "Number of tuberculosis deaths by gender",
       fr: "Nombre de décès dus à la tuberculose par sexe"
     }
   },
@@ -2250,7 +2250,7 @@ const TRANSLATIONS = [
     key: "numberOfTuberculosisDeathsBySexAndDetailedAgeGroup",
     translation: {
       ar: "عدد الوفيات الناجمة عن السل حسب الجنس والفئات العمرية التفصيلية",
-      en: "Number of tuberculosis deaths by sex and detailed age-group",
+      en: "Number of tuberculosis deaths by gender and detailed age-group",
       fr: "Nombre de décès dus à la tuberculose par sexe et tranche d'âge détaillée"
     }
   },
@@ -2306,7 +2306,7 @@ const TRANSLATIONS = [
     key: "numberOfAidsDeathsBySex",
     translation: {
       ar: "عدد الوفيات الناجمة عن الإيدز حسب الجنس",
-      en: "Number of AIDS deaths by sex",
+      en: "Number of AIDS deaths by gender",
       fr: "Nombre de décès dus au SIDA par sexe"
     }
   },
@@ -2314,7 +2314,7 @@ const TRANSLATIONS = [
     key: "numberOfAidsDeathsBySexAndDetailedAgeGroup",
     translation: {
       ar: "عدد الوفيات الناجمة عن الإيدز حسب الجنس والفئات العمرية التفصيلية",
-      en: "Number of AIDS deaths by sex and detailed age-group",
+      en: "Number of AIDS deaths by gender and detailed age-group",
       fr: "Nombre de décès dus au SIDA par sexe et tranche d'âge détaillée"
     }
   },
@@ -2387,7 +2387,7 @@ const TRANSLATIONS = [
     key: "distributionOfDeathsByTbAidsAndMalariaBySexAndAge",
     translation: {
       ar: "توزيع الوفيات الناجمة عن السل والإيدز والملاريا حسب الجنس والعمر",
-      en: "Distribution of deaths by TB, AIDS and malaria by sex and age",
+      en: "Distribution of deaths by TB, AIDS and malaria by gender and age",
       fr: "Répartition des décès par tuberculose, sida et paludisme par sexe et âge"
     }
   },

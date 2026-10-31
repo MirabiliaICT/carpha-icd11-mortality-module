@@ -46,6 +46,15 @@
       "translations": []
     },
     {
+      "code": "P_T",
+      "name": "Unknown",
+      "id": "ZCWbzLi5B4v",
+      "sortOrder": 6,
+      "optionSet": { "id": "b9QWoApPuYD" },
+      "attributeValues": [],
+      "translations": []
+    },
+    {
       "code": "0000",
       "name": "0000 - All Causes",
       "id": "lJz5VH7BB4F",
@@ -3509,6 +3518,68 @@
           "locale": "fr",
           "property": "NAME",
           "value": "Ferme"
+        }
+      ]
+    },
+    {
+      "code": "UNKNOWN",
+      "name": "Unknown",
+      "id": "pwQ4Cz1R7AA",
+      "sortOrder": 3,
+      "optionSet": {
+        "id": "z7EvKyu3I65"
+      },
+      "attributeValues": [],
+      "translations": [
+        {
+          "property": "NAME",
+          "locale": "id",
+          "value": "Wanita"
+        },
+        {
+          "property": "NAME",
+          "locale": "fr",
+          "value": "Féminin"
+        },
+        {
+          "property": "NAME",
+          "locale": "pt",
+          "value": "Feminino"
+        },
+        {
+          "property": "NAME",
+          "locale": "es",
+          "value": "Femenino"
+        },
+        {
+          "property": "NAME",
+          "locale": "ar",
+          "value": "إناث"
+        },
+        {
+          "property": "NAME",
+          "locale": "uz",
+          "value": "Аёл"
+        },
+        {
+          "property": "NAME",
+          "locale": "cs",
+          "value": "ženský"
+        },
+        {
+          "property": "NAME",
+          "locale": "uz_UZ",
+          "value": "Аyol"
+        },
+        {
+          "property": "NAME",
+          "locale": "nb",
+          "value": "Kvinne"
+        },
+        {
+          "property": "NAME",
+          "locale": "ru",
+          "value": "женский"
         }
       ]
     },

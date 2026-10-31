@@ -11,8 +11,10 @@ const page8 = (t) => {
   const TITLES = [
     t("numberOfAidsDeathsByMonth"),
     t("numberOfAidsDeathsPlaceOfDeath"),
-    t("numberOfAidsDeathsBySex"),
-    t("numberOfAidsDeathsBySexAndDetailedAgeGroup"),
+    // t("numberOfAidsDeathsBySex"),
+    "Number of AIDS deaths by gender",
+    // t("numberOfAidsDeathsBySexAndDetailedAgeGroup"),
+    "Number of AIDS deaths by gender and detailed age-group",
     t("numberOfAidsDeathsAndPercentOfAllAidsDeathsByBroadAgeGroup"),
     t("numberOfAidsDeathsComparedWithOtherCausesOfDeaths"),
   ];
