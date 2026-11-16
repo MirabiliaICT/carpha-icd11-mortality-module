@@ -367,7 +367,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         const trimmedOriginalHeaders = originalHeadersx.map(header => header.trim());
 
         // Combine the original headers with the report headers
-        const header = [...trimmedOriginalHeaders, "stemCode", "code", "uri", "report", "reject", "error", "warning", "system_id", "dob", "age"];
+        const header = [...trimmedOriginalHeaders, "stemCode", "code", "uri", "report", "reject", "error", "warning"];
 
         // Escape special characters in text fields
         const escapeField = (field) => {
@@ -457,10 +457,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                     escapeField(response.report), // Escaped report field
                     escapeField(response.reject),
                     escapeField(response.error),
-                    escapeField(response.warning),
-                    escapeField(systemIdValue), // First column value as system_id
-                    escapeField(dobValue), // DOB value (DateBirth or calculated)
-                    escapeField(ageValue)
+                    escapeField(response.warning)
                 ];
 
                 return completeRow.join(",");
@@ -1144,508 +1141,508 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                 throw new Error(`TEI API returned status ${teiResponse.httpStatusCode}: ${teiResponse.message || 'Unknown error'}${conflictDetails}`);
                             }
 
-                                // Push enrollment with timeout
-                                const enrollmentResponse = await Promise.race([
-                                    dataApi.pushEnrollment(data.enrollment, safeProgramMetadata.id),
-                                    new Promise((_, reject) =>
-                                        setTimeout(() => reject(new Error('Enrollment API timeout')), 30000)
-                                    )
-                                ]);
+                            // Push enrollment with timeout
+                            const enrollmentResponse = await Promise.race([
+                                dataApi.pushEnrollment(data.enrollment, safeProgramMetadata.id),
+                                new Promise((_, reject) =>
+                                    setTimeout(() => reject(new Error('Enrollment API timeout')), 30000)
+                                )
+                            ]);
 
-                                // Check if response is not 201 (correct success code for enrollment)
-                                console.log("Enrollment API response:", enrollmentResponse);
-                                console.log("Enrollment API response status:", enrollmentResponse.httpStatusCode);
-                                if (enrollmentResponse && enrollmentResponse.httpStatusCode && enrollmentResponse.httpStatusCode !== 201) {
-                                    throw new Error(`Enrollment API returned status ${enrollmentResponse.httpStatusCode}: ${enrollmentResponse.message || 'Unknown error'}`);
-                                }
-
-                                // Push events with timeout
-                                const eventsResponse = await Promise.race([
-                                    dataApi.pushEvents({ events: [data.event] }),
-                                    new Promise((_, reject) =>
-                                        setTimeout(() => reject(new Error('Events API timeout')), 30000)
-                                    )
-                                ]);
-
-                                // Check if response is not 200
-                                console.log("EVENT API response:", eventsResponse);
-                                console.log("EVENT API response status:", eventsResponse.httpStatusCode);
-                                if (eventsResponse && eventsResponse.httpStatusCode && eventsResponse.httpStatusCode !== 200) {
-                                    throw new Error(`Events API returned status ${eventsResponse.httpStatusCode}: ${eventsResponse.message || 'Unknown error'}`);
-                                }
-
-                                return { success: true };
-                            } catch (error) {
-                                // Determine which step failed based on error message
-                                let failedAtStep = 'Unknown';
-                                if (error.message.includes('TEI API')) {
-                                    failedAtStep = 'Tracked Entity Instance Creation';
-                                } else if (error.message.includes('Enrollment API')) {
-                                    failedAtStep = 'Enrollment Creation';
-                                } else if (error.message.includes('Events API')) {
-                                    failedAtStep = 'Event Creation';
-                                }
-
-                                return { success: false, error: error.message, failedAtStep };
+                            // Check if response is not 201 (correct success code for enrollment)
+                            console.log("Enrollment API response:", enrollmentResponse);
+                            console.log("Enrollment API response status:", enrollmentResponse.httpStatusCode);
+                            if (enrollmentResponse && enrollmentResponse.httpStatusCode && enrollmentResponse.httpStatusCode !== 201) {
+                                throw new Error(`Enrollment API returned status ${enrollmentResponse.httpStatusCode}: ${enrollmentResponse.message || 'Unknown error'}`);
                             }
-                        };
 
-                        const result = await processRecord();
+                            // Push events with timeout
+                            const eventsResponse = await Promise.race([
+                                dataApi.pushEvents({ events: [data.event] }),
+                                new Promise((_, reject) =>
+                                    setTimeout(() => reject(new Error('Events API timeout')), 30000)
+                                )
+                            ]);
 
-                        if (result.success) {
-                            console.log(`DHIS: Successfully processed row ${i + 1}`);
+                            // Check if response is not 200
+                            console.log("EVENT API response:", eventsResponse);
+                            console.log("EVENT API response status:", eventsResponse.httpStatusCode);
+                            if (eventsResponse && eventsResponse.httpStatusCode && eventsResponse.httpStatusCode !== 200) {
+                                throw new Error(`Events API returned status ${eventsResponse.httpStatusCode}: ${eventsResponse.message || 'Unknown error'}`);
+                            }
 
-                            // Add to processed data for CSV
-                            processedData.push({
-                                status: 'Success',
-                                message: 'Successfully processed',
-                                trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
-                                enrollment: data.enrollment?.enrollment || '',
-                                event: data.event?.event || '',
-                                originalRow: data // Keep reference to original data
-                            });
-                        } else {
-                            // Create error object with failedAtStep information
-                            const errorWithStep = new Error(result.error);
-                            errorWithStep.failedAtStep = result.failedAtStep;
-                            throw errorWithStep;
+                            return { success: true };
+                        } catch (error) {
+                            // Determine which step failed based on error message
+                            let failedAtStep = 'Unknown';
+                            if (error.message.includes('TEI API')) {
+                                failedAtStep = 'Tracked Entity Instance Creation';
+                            } else if (error.message.includes('Enrollment API')) {
+                                failedAtStep = 'Enrollment Creation';
+                            } else if (error.message.includes('Events API')) {
+                                failedAtStep = 'Event Creation';
+                            }
+
+                            return { success: false, error: error.message, failedAtStep };
                         }
+                    };
 
-                    } catch (error) {
-                        console.error(`DHIS Error processing data for record ${i + 1}:`, error);
+                    const result = await processRecord();
 
-                        // Add to errored rows with detailed error information
-                        const errorRecord = {
-                            data: {
-                                ...data,
-                                originalRow: data
-                            },
-                            error: error.message,
-                            timestamp: new Date().toISOString(),
-                            recordIndex: i + 1,
-                            failedAtStep: error.failedAtStep || 'Unknown'
-                        };
+                    if (result.success) {
+                        console.log(`DHIS: Successfully processed row ${i + 1}`);
 
-                        erroredRows.push(errorRecord);
-
-                        setDhisProcessingData(prev => ({
-                            ...prev,
-                            errorCount: prev.errorCount + 1,
-                            erroredRows: [...prev.erroredRows, errorRecord]
-                        }));
+                        // Add to processed data for CSV
+                        processedData.push({
+                            status: 'Success',
+                            message: 'Successfully processed',
+                            trackedEntityInstance: data.trackedEntityInstance?.trackedEntityInstance || '',
+                            enrollment: data.enrollment?.enrollment || '',
+                            event: data.event?.event || '',
+                            originalRow: data // Keep reference to original data
+                        });
+                    } else {
+                        // Create error object with failedAtStep information
+                        const errorWithStep = new Error(result.error);
+                        errorWithStep.failedAtStep = result.failedAtStep;
+                        throw errorWithStep;
                     }
 
-                    processedCount++;
-                    setProgress(Math.round((processedCount / totalRows) * 100));
+                } catch (error) {
+                    console.error(`DHIS Error processing data for record ${i + 1}:`, error);
+
+                    // Add to errored rows with detailed error information
+                    const errorRecord = {
+                        data: {
+                            ...data,
+                            originalRow: data
+                        },
+                        error: error.message,
+                        timestamp: new Date().toISOString(),
+                        recordIndex: i + 1,
+                        failedAtStep: error.failedAtStep || 'Unknown'
+                    };
+
+                    erroredRows.push(errorRecord);
 
                     setDhisProcessingData(prev => ({
                         ...prev,
-                        processedRows: processedCount
+                        errorCount: prev.errorCount + 1,
+                        erroredRows: [...prev.erroredRows, errorRecord]
                     }));
-
-                    // Add small delay between requests to prevent overwhelming the server
-                    if (i < content.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
                 }
 
-                // Generate CSV files after processing is complete
-                console.log("Processing complete. Generating CSV files...");
+                processedCount++;
+                setProgress(Math.round((processedCount / totalRows) * 100));
 
-                // Download successful results
-                if (processedData.length > 0) {
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                    writeDhisCsv(processedData, `dhis_import_results_${timestamp}.csv`, headers, originalCsvData, erroredRows);
-                }
-
-                // Download errors if any
-                if (erroredRows.length > 0) {
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                    downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${timestamp}.csv`, headers, originalCsvData);
-                }
-
-                // Clear file input and data
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-                setDhisFileData(null);
-
-            } catch (error) {
-                console.error("Fatal error in DHIS processing:", error);
                 setDhisProcessingData(prev => ({
                     ...prev,
-                    error: error.message
+                    processedRows: processedCount
                 }));
-            } finally {
-                setDhisProcessingData(prev => ({
-                    ...prev,
-                    isProcessing: false
-                }));
+
+                // Add small delay between requests to prevent overwhelming the server
+                if (i < content.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
-        };
 
-        const uploadProps = {
-            beforeUpload: handleFileUploadToDhis,
-            showUploadList: false,
-        };
+            // Generate CSV files after processing is complete
+            console.log("Processing complete. Generating CSV files...");
 
+            // Download successful results
+            if (processedData.length > 0) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                writeDhisCsv(processedData, `dhis_import_results_${timestamp}.csv`, headers, originalCsvData, erroredRows);
+            }
 
-        const handleCloseDorisTable = () => {
-            // Reset the DORIS processing state
-            setDorisProcessingData({
-                isProcessing: false,
-                hasStarted: false,
-                processedRows: 0,
-                totalRows: 0,
-                errorCount: 0,
-                erroredRows: []
-            });
+            // Download errors if any
+            if (erroredRows.length > 0) {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                downloadDhisErrorCsv(erroredRows, `dhis_import_errors_${timestamp}.csv`, headers, originalCsvData);
+            }
 
-            // Optionally clear the file data as well
-            setDorisFileData(null);
-
-            console.log("DORIS Processing table closed successfully.");
-        };
-
-        const handleCloseDhisTable = () => {
-            // Reset the DHIS processing state
-            setDhisProcessingData({
-                isProcessing: false,
-                hasStarted: false,
-                processedRows: 0,
-                totalRows: 0,
-                errorCount: 0,
-                erroredRows: []
-            });
-
-            // Optionally clear the file data as well
+            // Clear file input and data
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
             setDhisFileData(null);
 
-            console.log("DHIS Processing table closed successfully.");
-        };
+        } catch (error) {
+            console.error("Fatal error in DHIS processing:", error);
+            setDhisProcessingData(prev => ({
+                ...prev,
+                error: error.message
+            }));
+        } finally {
+            setDhisProcessingData(prev => ({
+                ...prev,
+                isProcessing: false
+            }));
+        }
+    };
 
-        const downloadFile = () => {
-            try {
-                const publicUrl = '\ICD11DorisTemplate.csv';
-
-                // Create download link
-                const link = document.createElement('a');
-                link.href = publicUrl;
-                link.download = 'ICD11DorisTemplate.csv';
-                link.target = '_blank';
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (error) {
-                alert('Download failed. Please try again.');
-            }
-        };
+    const uploadProps = {
+        beforeUpload: handleFileUploadToDhis,
+        showUploadList: false,
+    };
 
 
-        return (
+    const handleCloseDorisTable = () => {
+        // Reset the DORIS processing state
+        setDorisProcessingData({
+            isProcessing: false,
+            hasStarted: false,
+            processedRows: 0,
+            totalRows: 0,
+            errorCount: 0,
+            erroredRows: []
+        });
+
+        // Optionally clear the file data as well
+        setDorisFileData(null);
+
+        console.log("DORIS Processing table closed successfully.");
+    };
+
+    const handleCloseDhisTable = () => {
+        // Reset the DHIS processing state
+        setDhisProcessingData({
+            isProcessing: false,
+            hasStarted: false,
+            processedRows: 0,
+            totalRows: 0,
+            errorCount: 0,
+            erroredRows: []
+        });
+
+        // Optionally clear the file data as well
+        setDhisFileData(null);
+
+        console.log("DHIS Processing table closed successfully.");
+    };
+
+    const downloadFile = () => {
+        try {
+            const publicUrl = '\ICD11DorisTemplate.csv';
+
+            // Create download link
+            const link = document.createElement('a');
+            link.href = publicUrl;
+            link.download = 'ICD11DorisTemplate.csv';
+            link.target = '_blank';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            alert('Download failed. Please try again.');
+        }
+    };
 
 
-            <div className="import-module-main-div">
-                <h1 className="import-module-header">Mortality and Morbidity Data Import Module</h1>
-
-                {/* Import General Section*/}
-                <div className="general-wrapper" style={{}}>
-                    {/* DORIS Import Section */}
-                    <div className="doris-import-wrapper" style={{}}>
+    return (
 
 
-                        <div className="doris-content-div" style={{}}>
-                            <h2 style={{ fontSize: '28px' }}>DORIS ICD-11 Tool </h2>
+        <div className="import-module-main-div">
+            <h1 className="import-module-header">Mortality and Morbidity Data Import Module</h1>
 
-                            <p style={{ color: '#6E6E6E' }}>(a). Download template to generate the Underlying COD.
-
-                                <a onClick={downloadFile} style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8, fontWeight: 500 }}>Download Import Template</a>
-
-                            </p>
-
-
-                            <p style={{ color: '#6E6E6E' }}>(b). Upload a csv file containing mortality data to generate the Underlying COD.</p>
-                            <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
+            {/* Import General Section*/}
+            <div className="general-wrapper" style={{}}>
+                {/* DORIS Import Section */}
+                <div className="doris-import-wrapper" style={{}}>
 
 
+                    <div className="doris-content-div" style={{}}>
+                        <h2 style={{ fontSize: '28px' }}>DORIS ICD-11 Tool </h2>
 
-                            <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10, color: '#6E6E6E', borderRadius: 5 }}>Select COD FIle</Button>
-                            {dorisFileData && !dorisProcessingData.isProcessing && (
-                                <Button style={{ backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDorisCodProcessing}>Start Data Import</Button>
-                            )}
-                        </div>
+                        <p style={{ color: '#6E6E6E' }}>(a). Download template to generate the Underlying COD.
 
+                            <a onClick={downloadFile} style={{ color: '#12588C', cursor: 'pointer', textDecoration: 'underline', marginLeft: 8, fontWeight: 500 }}>Download Import Template</a>
 
-                        {/* Processing Section */}
-                        {(dorisProcessingData.isProcessing || dorisProcessingData.hasStarted || dorisProcessingData.processedRows >= 1) && (
-                            <div className="doris-process" style={{}}>
-
-                                {/* Header */}
-                                <div className="process-header" style={{}}>
-                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'normal' }}>Processing: {dorisFileData?.fileName}</h3>
-                                    <span style={{ marginLeft: 'auto', fontSize: '18px' }}><img src={colorImage}></img></span>
-
-                                </div>
-
-                                {/* Metrics and value header */}
-                                <div className="metrics-value-wrapper" style={{}}>
-                                    <h3 className="metrics-title" style={{}}>Metrics</h3>
-                                    <span className="value-title" style={{}}>Value</span>
-
-                                </div>
-                                <div style={{ padding: '20px' }}>
-                                    {/* Total row div */}
-                                    <div className="total-row-div" style={{}}>
-                                        <div className="total-dotted-wrapper" style={{}}>
-                                            <div className="total-title" style={{}}>Total Rows</div>
-                                            <div className="total-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.totalRows}</span>
-                                    </div>
-
-                                    {/* process row div*/}
-                                    <div className="process-row-div" style={{}}>
-                                        <div className="process-dotted-wrapper" style={{}}>
-                                            <div className="process-title" style={{}}>Processed Rows</div>
-                                            <div className="process-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.processedRows}</span>
-                                    </div>
-
-                                    {/* error row div*/}
-                                    <div className="error-row-div" style={{}}>
-                                        <div className="error-dotted-wrapper" style={{}}>
-                                            <div className="error-title" style={{}}>Errors</div>
-                                            <div className="error-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold', color: dorisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
-                                            {dorisProcessingData.errorCount}
-                                        </span>
-                                    </div>
-
-                                    {/* Progress row div */}
-                                    <div style={{ marginBottom: 12 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: '14px' }}>
-                                            <span style={{ color: '#666' }}>Progress</span>
-                                            {/* Progress Bar */}
-                                            <span style={{
-                                                width: '78%',
-                                                height: '8px',
-                                                backgroundColor: '#f0f0f0',
-                                                borderRadius: '4px',
-                                                // border : '1px solid #0cb079',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <div style={{
-                                                    width: `${dorisProcessingData.totalRows > 0 ? (dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100 : 0}%`,
-                                                    height: '100%',
-                                                    backgroundColor: '#0cb079',
-                                                    transition: 'width 0.3s ease'
-                                                }}></div>
-                                            </span>
-                                            <span style={{ fontWeight: 'bold' }}>
-                                                {dorisProcessingData.totalRows > 0
-                                                    ? `${((dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100).toFixed(0)}%`
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
+                        </p>
 
 
-                                    </div>
-                                </div>
-                                {dorisProcessingData.processedRows >= dorisProcessingData.totalRows && (
-                                    <>
-                                        <div style={{ paddingLeft: 20, color: '#0cb079' }}>Processing complete!</div>
+                        <p style={{ color: '#6E6E6E' }}>(b). Upload a csv file containing mortality data to generate the Underlying COD.</p>
+                        <input type="file" accept=".csv,.json" ref={fileInputRef} onChange={handleDorisUploadFileSelection} style={{ display: 'none' }} />
 
-                                        {dorisProcessingData.errorCount > 0 && (
-                                            <div style={{ padding: '10px 20px', color: 'red' }}>
-                                                Errors Encountered: {dorisProcessingData.errorCount}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
 
-                                {/* Close Button - Hidden for now to match the design */}
-                                <Button
-                                    onClick={handleCloseDorisTable}
-                                    style={{ margin: 20 }}
-                                    danger
-                                >
-                                    Close
-                                </Button>
-                            </div>
+
+                        <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10, color: '#6E6E6E', borderRadius: 5 }}>Select COD FIle</Button>
+                        {dorisFileData && !dorisProcessingData.isProcessing && (
+                            <Button style={{ backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDorisCodProcessing}>Start Data Import</Button>
                         )}
                     </div>
 
 
-                    {/* DHIS and its Process Table */}
-                    <div className="dhis-wrapper" style={{}} >
+                    {/* Processing Section */}
+                    {(dorisProcessingData.isProcessing || dorisProcessingData.hasStarted || dorisProcessingData.processedRows >= 1) && (
+                        <div className="doris-process" style={{}}>
 
-                        {/* DHIS Import Section */}
-                        <div className="dhis-content-div" style={{}}>
-                            <h2 style={{ fontSize: '28px' }}>Mortality Data DHIS Import</h2>
-                            <p style={{ color: '#6E6E6E' }}>Upload CSV file into DHIS2.</p>
+                            {/* Header */}
+                            <div className="process-header" style={{}}>
+                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'normal' }}>Processing: {dorisFileData?.fileName}</h3>
+                                <span style={{ marginLeft: 'auto', fontSize: '18px' }}><img src={colorImage}></img></span>
 
-
-                            {/* Organization Units Dropdown */}
-                            <div style={{ marginBottom: 20 }}>
-                                {/* <label htmlFor="orgUnitDropdown">Select Organization Unit:</label> */}
-                                <select
-                                    id="orgUnitDropdown"
-                                    value={selectedOrgUnit}
-                                    onChange={handleOrgUnitChange}
-                                    style={{ width: '100%', padding: 10, borderRadius: 5, color: '#6E6E6E', backgroundColor: '#F8F8F8' }}
-                                >
-                                    <option value="">Select an organization unit</option>
-                                    {orgUnits.map(unit => (
-                                        <option key={unit.id} value={unit.id}>
-                                            {unit.displayName}
-                                        </option>
-                                    ))}
-                                </select>
                             </div>
 
-                            {/* Upload button for DHIS2 Import Section */}
+                            {/* Metrics and value header */}
+                            <div className="metrics-value-wrapper" style={{}}>
+                                <h3 className="metrics-title" style={{}}>Metrics</h3>
+                                <span className="value-title" style={{}}>Value</span>
 
-                            {selectedOrgUnit ? (
-                                <Upload {...uploadProps}>
-                                    <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
-                                </Upload>
-                            ) : (
-                                <div style={{ color: '#888', marginBottom: 10 }}>
-                                    Please select an organization unit to enable file upload.
-                                </div>
-                            )}
-                            {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
-                            {dhisFileData && !dhisProcessingData.isProcessing && (
-                                <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
-                            )}
-
-
-                        </div>
-
-                        {/* Error Message */}
-                        {dhisProcessingData.error && (
-                            <div style={{ color: 'red', marginBottom: 10 }}>Error: {dhisProcessingData.error}</div>
-                        )}
-
-                        {(dhisProcessingData.isProcessing || dhisProcessingData.hasStarted || dhisProcessingData.processedRows >= 1) && (
-                            <div className="doris-process" style={{ border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, maxWidth: '553px', width: '100%', margin: 'auto' }}>
-
-                                {/* Header */}
-                                <div className="process-header" style={{}}>
-                                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'normal' }}>Processing: {dhisFileData?.fileName}</h3>
-                                    <span style={{ marginLeft: 'auto', fontSize: '18px' }}><img src={colorImage}></img></span>
-
+                            </div>
+                            <div style={{ padding: '20px' }}>
+                                {/* Total row div */}
+                                <div className="total-row-div" style={{}}>
+                                    <div className="total-dotted-wrapper" style={{}}>
+                                        <div className="total-title" style={{}}>Total Rows</div>
+                                        <div className="total-dotted-div" style={{}}> </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.totalRows}</span>
                                 </div>
 
-                                {/* Metrics and value header */}
-                                <div className="metrics-value-wrapper" style={{}}>
-                                    <h3 className="metrics-title" style={{}}>Metrics</h3>
-                                    <span className="value-title" style={{}}>Value</span>
-
+                                {/* process row div*/}
+                                <div className="process-row-div" style={{}}>
+                                    <div className="process-dotted-wrapper" style={{}}>
+                                        <div className="process-title" style={{}}>Processed Rows</div>
+                                        <div className="process-dotted-div" style={{}}> </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>{dorisProcessingData.processedRows}</span>
                                 </div>
-                                <div style={{ padding: '20px' }}>
-                                    {/* Total row div */}
-                                    <div className="total-row-div" style={{}}>
-                                        <div className="total-dotted-wrapper" style={{}}>
-                                            <div className="total-title" style={{}}>Total Rows</div>
-                                            <div className="total-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.totalRows}</span>
-                                    </div>
 
-                                    {/* process row div*/}
-                                    <div className="process-row-div" style={{}}>
-                                        <div className="process-dotted-wrapper" style={{}}>
-                                            <div className="process-title" style={{ color: '#666' }}>Processed Rows</div>
-                                            <div className="process-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.processedRows}</span>
+                                {/* error row div*/}
+                                <div className="error-row-div" style={{}}>
+                                    <div className="error-dotted-wrapper" style={{}}>
+                                        <div className="error-title" style={{}}>Errors</div>
+                                        <div className="error-dotted-div" style={{}}> </div>
                                     </div>
+                                    <span style={{ fontWeight: 'bold', color: dorisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
+                                        {dorisProcessingData.errorCount}
+                                    </span>
+                                </div>
 
-                                    {/* error row div*/}
-                                    <div className="error-row-div" style={{}}>
-                                        <div className="error-dotted-wrapper" style={{}}>
-                                            <div className="error-title" style={{}}>Errors</div>
-                                            <div className="error-dotted-div" style={{}}> </div>
-                                        </div>
-                                        <span style={{ fontWeight: 'bold', color: dhisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
-                                            {dhisProcessingData.errorCount}
-                                        </span>
-                                    </div>
-
-                                    {/* Progress row div */}
-                                    <div style={{ marginBottom: 12 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: '14px' }}>
-                                            <span style={{ color: '#666' }}>Progress</span>
-                                            {/* Progress Bar */}
-                                            <span style={{
-                                                width: '70%',
-                                                height: '8px',
+                                {/* Progress row div */}
+                                <div style={{ marginBottom: 12 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: '14px' }}>
+                                        <span style={{ color: '#666' }}>Progress</span>
+                                        {/* Progress Bar */}
+                                        <span style={{
+                                            width: '78%',
+                                            height: '8px',
+                                            backgroundColor: '#f0f0f0',
+                                            borderRadius: '4px',
+                                            // border : '1px solid #0cb079',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                width: `${dorisProcessingData.totalRows > 0 ? (dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100 : 0}%`,
+                                                height: '100%',
                                                 backgroundColor: '#0cb079',
-                                                borderRadius: '4px',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <div style={{
-                                                    width: `${dhisProcessingData.totalRows > 0 ? (dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100 : 0}%`,
-                                                    height: '100%',
-                                                    backgroundColor: '#52c41a',
-                                                    transition: 'width 0.3s ease'
-                                                }}></div>
-                                            </span>
-                                            <span style={{ fontWeight: 'bold' }}>
-                                                {dhisProcessingData.totalRows > 0
-                                                    ? `${((dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100).toFixed(0)}%`
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
-
-
+                                                transition: 'width 0.3s ease'
+                                            }}></div>
+                                        </span>
+                                        <span style={{ fontWeight: 'bold' }}>
+                                            {dorisProcessingData.totalRows > 0
+                                                ? `${((dorisProcessingData.processedRows / dorisProcessingData.totalRows) * 100).toFixed(0)}%`
+                                                : '0%'
+                                            }
+                                        </span>
                                     </div>
+
+
                                 </div>
-                                {dhisProcessingData.processedRows >= dhisProcessingData.totalRows && (
-                                    <>
-                                        <div style={{ paddingLeft: 20, color: 'green' }}>Processing complete!</div>
+                            </div>
+                            {dorisProcessingData.processedRows >= dorisProcessingData.totalRows && (
+                                <>
+                                    <div style={{ paddingLeft: 20, color: '#0cb079' }}>Processing complete!</div>
 
-                                        {dhisProcessingData.errorCount > 0 && (
-                                            <div style={{ padding: '10px 20px', color: 'red' }}>
-                                                Errors Encountered: {dhisProcessingData.errorCount}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
+                                    {dorisProcessingData.errorCount > 0 && (
+                                        <div style={{ padding: '10px 20px', color: 'red' }}>
+                                            Errors Encountered: {dorisProcessingData.errorCount}
+                                        </div>
+                                    )}
+                                </>
+                            )}
 
-                                {/* Close Button */}
-                                <Button
-                                    onClick={handleCloseDhisTable}
-                                    style={{ margin: 20 }}
-                                    danger
-                                >
-                                    Close
-                                </Button>
+                            {/* Close Button - Hidden for now to match the design */}
+                            <Button
+                                onClick={handleCloseDorisTable}
+                                style={{ margin: 20 }}
+                                danger
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    )}
+                </div>
+
+
+                {/* DHIS and its Process Table */}
+                <div className="dhis-wrapper" style={{}} >
+
+                    {/* DHIS Import Section */}
+                    <div className="dhis-content-div" style={{}}>
+                        <h2 style={{ fontSize: '28px' }}>Mortality Data DHIS Import</h2>
+                        <p style={{ color: '#6E6E6E' }}>Upload CSV file into DHIS2.</p>
+
+
+                        {/* Organization Units Dropdown */}
+                        <div style={{ marginBottom: 20 }}>
+                            {/* <label htmlFor="orgUnitDropdown">Select Organization Unit:</label> */}
+                            <select
+                                id="orgUnitDropdown"
+                                value={selectedOrgUnit}
+                                onChange={handleOrgUnitChange}
+                                style={{ width: '100%', padding: 10, borderRadius: 5, color: '#6E6E6E', backgroundColor: '#F8F8F8' }}
+                            >
+                                <option value="">Select an organization unit</option>
+                                {orgUnits.map(unit => (
+                                    <option key={unit.id} value={unit.id}>
+                                        {unit.displayName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Upload button for DHIS2 Import Section */}
+
+                        {selectedOrgUnit ? (
+                            <Upload {...uploadProps}>
+                                <Button style={{ borderRadius: 5 }} icon={<UploadOutlined />}>Upload CSV</Button>
+                            </Upload>
+                        ) : (
+                            <div style={{ color: '#888', marginBottom: 10 }}>
+                                Please select an organization unit to enable file upload.
                             </div>
                         )}
+                        {/* <Button onClick={() => fileInputRef.current.click()} style={{ marginRight: 10 }}>Select COD FIle</Button> */}
+                        {dhisFileData && !dhisProcessingData.isProcessing && (
+                            <Button style={{ marginLeft: '10px', backgroundColor: '#125887', borderRadius: 5 }} type="primary" onClick={beginDhisCodProcessing}>Start Data Import</Button>
+                        )}
+
+
                     </div>
+
+                    {/* Error Message */}
+                    {dhisProcessingData.error && (
+                        <div style={{ color: 'red', marginBottom: 10 }}>Error: {dhisProcessingData.error}</div>
+                    )}
+
+                    {(dhisProcessingData.isProcessing || dhisProcessingData.hasStarted || dhisProcessingData.processedRows >= 1) && (
+                        <div className="doris-process" style={{ border: '1px solid #ddd', borderRadius: 10, marginBottom: 20, maxWidth: '553px', width: '100%', margin: 'auto' }}>
+
+                            {/* Header */}
+                            <div className="process-header" style={{}}>
+                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'normal' }}>Processing: {dhisFileData?.fileName}</h3>
+                                <span style={{ marginLeft: 'auto', fontSize: '18px' }}><img src={colorImage}></img></span>
+
+                            </div>
+
+                            {/* Metrics and value header */}
+                            <div className="metrics-value-wrapper" style={{}}>
+                                <h3 className="metrics-title" style={{}}>Metrics</h3>
+                                <span className="value-title" style={{}}>Value</span>
+
+                            </div>
+                            <div style={{ padding: '20px' }}>
+                                {/* Total row div */}
+                                <div className="total-row-div" style={{}}>
+                                    <div className="total-dotted-wrapper" style={{}}>
+                                        <div className="total-title" style={{}}>Total Rows</div>
+                                        <div className="total-dotted-div" style={{}}> </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.totalRows}</span>
+                                </div>
+
+                                {/* process row div*/}
+                                <div className="process-row-div" style={{}}>
+                                    <div className="process-dotted-wrapper" style={{}}>
+                                        <div className="process-title" style={{ color: '#666' }}>Processed Rows</div>
+                                        <div className="process-dotted-div" style={{}}> </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>{dhisProcessingData.processedRows}</span>
+                                </div>
+
+                                {/* error row div*/}
+                                <div className="error-row-div" style={{}}>
+                                    <div className="error-dotted-wrapper" style={{}}>
+                                        <div className="error-title" style={{}}>Errors</div>
+                                        <div className="error-dotted-div" style={{}}> </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold', color: dhisProcessingData.errorCount > 0 ? '#ff4d4f' : 'inherit' }}>
+                                        {dhisProcessingData.errorCount}
+                                    </span>
+                                </div>
+
+                                {/* Progress row div */}
+                                <div style={{ marginBottom: 12 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, fontSize: '14px' }}>
+                                        <span style={{ color: '#666' }}>Progress</span>
+                                        {/* Progress Bar */}
+                                        <span style={{
+                                            width: '70%',
+                                            height: '8px',
+                                            backgroundColor: '#0cb079',
+                                            borderRadius: '4px',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                width: `${dhisProcessingData.totalRows > 0 ? (dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100 : 0}%`,
+                                                height: '100%',
+                                                backgroundColor: '#52c41a',
+                                                transition: 'width 0.3s ease'
+                                            }}></div>
+                                        </span>
+                                        <span style={{ fontWeight: 'bold' }}>
+                                            {dhisProcessingData.totalRows > 0
+                                                ? `${((dhisProcessingData.processedRows / dhisProcessingData.totalRows) * 100).toFixed(0)}%`
+                                                : '0%'
+                                            }
+                                        </span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            {dhisProcessingData.processedRows >= dhisProcessingData.totalRows && (
+                                <>
+                                    <div style={{ paddingLeft: 20, color: 'green' }}>Processing complete!</div>
+
+                                    {dhisProcessingData.errorCount > 0 && (
+                                        <div style={{ padding: '10px 20px', color: 'red' }}>
+                                            Errors Encountered: {dhisProcessingData.errorCount}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Close Button */}
+                            <Button
+                                onClick={handleCloseDhisTable}
+                                style={{ margin: 20 }}
+                                danger
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
+        </div>
 
 
-        );
+    );
+
+};
+
+const mapStateToProps = (state) => {
+    return {
+        metadata: state.metadata,
+        data: state.data,
+        icdApi_clientToken: state.metadata.icdApi_clientToken,
+        keyUILocale: state.metadata.keyUiLocale
 
     };
+};
 
-    const mapStateToProps = (state) => {
-        return {
-            metadata: state.metadata,
-            data: state.data,
-            icdApi_clientToken: state.metadata.icdApi_clientToken,
-            keyUILocale: state.metadata.keyUiLocale
-
-        };
-    };
-
-    export default connect(mapStateToProps)(ImportData);
+export default connect(mapStateToProps)(ImportData);
