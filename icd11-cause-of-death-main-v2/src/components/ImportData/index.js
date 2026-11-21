@@ -711,6 +711,56 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                 console.log('Selected Organization Unit ID:', event.target.value);
             };
 
+            // Normalizes a raw date value from the import file into the YYYY-MM-DD
+            // format expected by DHIS2, avoiding timezone shifts for ISO dates.
+            const normalizeDeathDate = (value) => {
+                if (!value) return "";
+                const raw = String(value).trim();
+                if (!raw) return "";
+
+                // Already an ISO date (e.g. 2023-09-24 or 2023-09-24T10:00:00) —
+                // keep the date part as-is so UTC parsing doesn't shift the day.
+                const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                if (isoMatch) {
+                    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+                }
+
+                // Handles common spreadsheet formats such as 9/24/2023 or 24-09-2023.
+                const parsed = new Date(raw);
+                if (isNaN(parsed.getTime())) return "";
+
+                const month = (parsed.getMonth() + 1).toString().padStart(2, "0");
+                const day = parsed.getDate().toString().padStart(2, "0");
+                const year = parsed.getFullYear().toString();
+                return `${year}-${month}-${day}`;
+            };
+
+            // Finds the date of death in a CSV row using its header name.
+            // The import file can come from the DORIS template (DateDeath) or a
+            // DHIS2 tracker export (Date of Death / incidentDate).
+            const getDeathDateFromRow = (headers, values) => {
+                if (!Array.isArray(headers) || !Array.isArray(values)) return "";
+
+                const normalizeHeader = (header) =>
+                    String(header || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+                const deathDateHeaders = [
+                    "datedeath",
+                    "dateofdeath",
+                    "deathdate",
+                    "incidentdate",
+                    "eventdate"
+                ];
+
+                const headerIndex = headers.findIndex(header =>
+                    deathDateHeaders.includes(normalizeHeader(header))
+                );
+
+                if (headerIndex === -1 || headerIndex >= values.length) return "";
+
+                return normalizeDeathDate(values[headerIndex]);
+            };
+
 
             const handleFileUploadToDhis = (file) => {
                 const formMapping = require("../../asset/metadata/mapping.json");
@@ -766,6 +816,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                 // Process data rows (skip header row)
                                 for (let i = 1; i < parsedCSV.length; i++) {
                                     const values = parsedCSV[i];
+                                    const deathDate = getDeathDateFromRow(headers, values);
 
                                     // Store original CSV data for this record
                                     const originalRecordData = {};
@@ -820,7 +871,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                             lastUpdatedAtClient: dateandTime,
                                             enrollmentDate: new Date().toISOString().split('T')[0],
                                             deleted: false,
-                                            incidentDate: new Date().toISOString().split('T')[0],
+                                            incidentDate: deathDate || new Date().toISOString().split('T')[0],
                                             status: "COMPLETED",
                                             lastUpdatedByUserInfo: {
                                                 uid: userDetails.id,
@@ -891,8 +942,8 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                             program: programid,
                                             programStage: programStageId,
                                             dataValues: dataValues,
-                                            eventDate: new Date().toISOString().split('T')[0],
-                                            dueDate: new Date().toISOString().split('T')[0],
+                                            eventDate: deathDate || new Date().toISOString().split('T')[0],
+                                            dueDate: deathDate || new Date().toISOString().split('T')[0],
                                             attributes: attributeValues
                                         }
                                     };
