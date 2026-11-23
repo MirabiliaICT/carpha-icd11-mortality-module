@@ -709,6 +709,72 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
         console.log('Selected Organization Unit ID:', event.target.value);
     };
 
+    /**
+     * Normalizes a raw date value into YYYY-MM-DD for DHIS2 without UTC timezone day-shift.
+     */
+    const normalizeDeathDate = (value) => {
+        if (!value) return "";
+        const raw = String(value).trim();
+        if (!raw) return "";
+
+        const isoMatch = raw.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+        if (isoMatch) {
+            const year = isoMatch[1];
+            const month = isoMatch[2].padStart(2, "0");
+            const day = isoMatch[3].padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        const parsed = new Date(raw);
+        if (!isNaN(parsed.getTime())) {
+            const year = parsed.getFullYear().toString();
+            const month = (parsed.getMonth() + 1).toString().padStart(2, "0");
+            const day = parsed.getDate().toString().padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        }
+
+        // Fallback for DD/MM/YYYY or DD-MM-YYYY where day > 12 fails native Date parsing
+        const dmyMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+        if (dmyMatch) {
+            const day = dmyMatch[1].padStart(2, "0");
+            const month = dmyMatch[2].padStart(2, "0");
+            const year = dmyMatch[3];
+            if (parseInt(month, 10) >= 1 && parseInt(month, 10) <= 12 && parseInt(day, 10) >= 1 && parseInt(day, 10) <= 31) {
+                return `${year}-${month}-${day}`;
+            }
+        }
+
+        return "";
+    };
+
+    /**
+     * Extracts and normalizes Date of Death from a CSV row using known header names.
+     */
+    const getDeathDateFromRow = (headers, values) => {
+        if (!Array.isArray(headers) || !Array.isArray(values)) return "";
+
+        const normalizeHeader = (header) =>
+            String(header || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+        const deathDateHeaders = [
+            "datedeath",
+            "dateofdeath",
+            "deathdate",
+            "incidentdate"
+        ];
+
+        const normalizedHeaders = headers.map(normalizeHeader);
+        for (const candidate of deathDateHeaders) {
+            const headerIndex = normalizedHeaders.indexOf(candidate);
+            if (headerIndex !== -1 && headerIndex < values.length) {
+                const normalized = normalizeDeathDate(values[headerIndex]);
+                if (normalized) return normalized;
+            }
+        }
+
+        return "";
+    };
+
 
     const handleFileUploadToDhis = (file) => {
         const formMapping = require("../../asset/metadata/mapping.json");
@@ -764,6 +830,9 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                         // Process data rows (skip header row)
                         for (let i = 1; i < parsedCSV.length; i++) {
                             const values = parsedCSV[i];
+                            if (!values || values.every(cell => cleanCSVValue(cell) === "")) {
+                                continue;
+                            }
 
                             // Store original CSV data for this record
                             const originalRecordData = {};
@@ -817,6 +886,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                             const trackedEntityTypeId = metadata?.programMetadata?.trackedEntityType || 'RQrHOJGKT5H';
 
                             const dateandTime = new Date().toISOString().split('T')[0];
+                            const deathDate = getDeathDateFromRow(headers, values);
 
                             const eventPayload = {
                                 enrollment: {
@@ -826,7 +896,7 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                     trackedEntityInstance: trackID,
                                     trackedEntityType: trackedEntityTypeId,
                                     enrollmentDate: dateandTime,
-                                    incidentDate: dateandTime,
+                                    incidentDate: deathDate || dateandTime,
                                     status: "COMPLETED"
                                 },
 
@@ -845,8 +915,8 @@ const ImportData = ({ metadata, icdApi_clientToken }) => {
                                     program: programid,
                                     programStage: programStageId,
                                     dataValues: dataValues,
-                                    eventDate: dateandTime,
-                                    dueDate: dateandTime
+                                    eventDate: deathDate || dateandTime,
+                                    dueDate: deathDate || dateandTime
                                 }
                             };
                             parsedData.push(eventPayload);
